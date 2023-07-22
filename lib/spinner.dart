@@ -2,10 +2,27 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+class ElementDescription {
+  final double startAngle;
+  final double anchorAngle;
+  final double endAngle;
+
+  ElementDescription(
+    this.anchorAngle,
+    double spanTheta,
+  )   : startAngle = anchorAngle - spanTheta / 2,
+        endAngle = anchorAngle + spanTheta / 2;
+}
+
 class Spinner extends StatefulWidget {
+  final int elementsPerHalf;
   final double radius;
 
-  const Spinner({Key? key, required this.radius}) : super(key: key);
+  const Spinner({
+    Key? key,
+    required this.radius,
+    required this.elementsPerHalf,
+  }) : super(key: key);
 
   @override
   State<Spinner> createState() => _SpinnerState();
@@ -16,7 +33,7 @@ class _SpinnerState extends State<Spinner> {
   late double outerRadius;
   late double innerRadius;
   late double theta;
-  int numberOfItems = 14;
+  late int numberOfItems;
   late ScrollController controller;
   GlobalKey<_SpinnerState> scrollKey = GlobalKey<_SpinnerState>();
   double rotationAngle = 0;
@@ -29,6 +46,7 @@ class _SpinnerState extends State<Spinner> {
   late double circleElementWidth;
   double? offset;
   final int repeatContent = 5;
+  List<ElementDescription> _elementDescriptions = [];
 
   // Method to find the coordinates and
   // setstate method that will set the value to
@@ -47,6 +65,7 @@ class _SpinnerState extends State<Spinner> {
   void initState() {
     super.initState();
     spinnerWidth = widget.radius * 2;
+    numberOfItems = 2 * widget.elementsPerHalf;
     controller = ScrollController(initialScrollOffset: spinnerWidth);
     theta = 360 / numberOfItems;
     outerRadius = spinnerWidth / 2;
@@ -55,18 +74,9 @@ class _SpinnerState extends State<Spinner> {
     circleElementHeight = outerRadius - innerRadius;
     anchorRadius = innerRadius + circleElementHeight / 2;
     circleElementWidth = 20;
-    controller.addListener(() {
-      // double offset = controller.offset;
-      // double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
-      // setState(() {
-      //   rotationAngle = newRotationAngle;
-      // });
-      // if (offset <= 0) {
-      //   controller.jumpTo(spinnerWidth);
-      // } else if (offset >= (spinnerWidth + contentHeight)) {
-      //   controller.jumpTo(spinnerWidth);
-      // }
-    });
+    for (int i = 0; i < numberOfItems; i++) {
+      _elementDescriptions.add(ElementDescription((90 + i * theta), theta));
+    }
   }
 
   @override
@@ -76,10 +86,11 @@ class _SpinnerState extends State<Spinner> {
     circles.add(_anchorCircle(anchorRadius));
     circles.add(_outerCircle());
     circles.add(_innerCircle());
-    for (int i = 0; i < numberOfItems; i++) {
-      double dx = anchorRadius * (cos(_radians(90 + i * theta)) - cos(_radians(90)));
-      double dy = -1 * anchorRadius * (sin(_radians(90 + i * theta)) - sin(_radians(90)));
-      double rotationAngle = _radians(-1 * i * theta);
+    for (var elementDescription in _elementDescriptions) {
+      int elementIndex = (_elementDescriptions.indexOf(elementDescription));
+      double dx = anchorRadius * (cos(_radians(elementDescription.anchorAngle)) - cos(_radians(90)));
+      double dy = -1 * anchorRadius * (sin(_radians(elementDescription.anchorAngle)) - sin(_radians(90)));
+      double rotationAngle = _radians(-1 * elementIndex * theta);
       Offset translation = Offset(dx, dy);
       Widget container = Positioned(
         top: 0,
@@ -94,7 +105,7 @@ class _SpinnerState extends State<Spinner> {
               color: Colors.black,
               alignment: Alignment.center,
               child: Text(
-                "$i",
+                "$elementIndex",
                 style: TextStyle(
                   inherit: false,
                   fontSize: 12,
@@ -154,8 +165,7 @@ class _SpinnerState extends State<Spinner> {
               //   rotationMultiplier = -1;
               // }
               debugPrint("Direction: ${scrollInfo.direction}");
-            }
-            else if (scrollInfo is ScrollUpdateNotification) {
+            } else if (scrollInfo is ScrollUpdateNotification) {
               double delta = 0;
               if (offset != null) {
                 delta = (scrollInfo.metrics.pixels - offset!) * 360 * repeatContent / contentHeight;

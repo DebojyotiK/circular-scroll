@@ -47,7 +47,10 @@ class HomePage extends StatelessWidget {
       color: Colors.white,
       alignment: Alignment.topLeft,
       padding: EdgeInsets.only(top: 64),
-      child: Spinner(radius: width * 0.8 / 2),
+      child: Spinner(
+        radius: width * 0.8 / 2,
+        elementsPerHalf: 7,
+      ),
     );
   }
 }
