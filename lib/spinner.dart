@@ -20,6 +20,7 @@ class _SpinnerState extends State<Spinner> {
   late ScrollController controller;
   GlobalKey<_SpinnerState> scrollKey = GlobalKey<_SpinnerState>();
   double rotationAngle = 0;
+  String rotationAngleText = "";
   late double contentHeight;
   int rotationMultiplier = 1;
   late double circleElementHeight;
@@ -68,9 +69,10 @@ class _SpinnerState extends State<Spinner> {
   @override
   Widget build(BuildContext context) {
     List<Widget> elements = [];
-    elements.add(_anchorCircle(anchorRadius));
-    elements.add(_outerCircle());
-    elements.add(_innerCircle());
+    List<Widget> circles = [];
+    circles.add(_anchorCircle(anchorRadius));
+    circles.add(_outerCircle());
+    circles.add(_innerCircle());
     for (int i = 0; i < numberOfItems; i++) {
       double dx = anchorRadius * (cos(_radians(90 + i * theta)) - cos(_radians(90)));
       double dy = -1 * anchorRadius * (sin(_radians(90 + i * theta)) - sin(_radians(90)));
@@ -102,59 +104,150 @@ class _SpinnerState extends State<Spinner> {
       );
       elements.add(container);
     }
-    return Container(
-      color: Colors.red,
-      width: spinnerWidth,
-      height: spinnerWidth,
-      child: Stack(
-        children: [
-          Transform.rotate(
-            angle: _radians(rotationAngle),
-            child: Stack(
-              children: elements,
-            ),
+    return Column(
+      children: [
+        Container(
+          color: Colors.green,
+          width: spinnerWidth,
+          height: spinnerWidth * 2,
+          child: Stack(
+            children: [
+              _circles(circles),
+              _segments(elements),
+              _scrollContainer(),
+            ],
           ),
-          NotificationListener<ScrollNotification>(
-            child: _scrollView(),
-            onNotification: (ScrollNotification scrollInfo) {
-              if (scrollInfo is ScrollUpdateNotification) {
-                double offset = scrollInfo.metrics.pixels;
-                double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
-                if (scrollInfo.dragDetails != null) {
-                  double x = _translatedX(scrollInfo.dragDetails!.localPosition);
-                  double y = _translatedY(scrollInfo.dragDetails!.localPosition);
-                  rotationMultiplier = (x > 0) ? -1 : 1;
-                }
-                setState(() {
-                  rotationAngle = rotationMultiplier * newRotationAngle;
-                  debugPrint("Rotation Angle: $rotationAngle");
-                });
-                if (offset <= 0) {
-                  controller.jumpTo(spinnerWidth);
-                } else if (offset >= (spinnerWidth + contentHeight)) {
-                  controller.jumpTo(spinnerWidth);
-                }
+        ),
+        Text(
+          rotationAngleText,
+          style: const TextStyle(
+            inherit: false,
+            color: Colors.black,
+            fontSize: 20,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Positioned _scrollContainer() {
+    return Positioned(
+      top: spinnerWidth,
+      left: 0,
+      right: 0,
+      child: Container(
+        height: spinnerWidth,
+        child: NotificationListener<ScrollNotification>(
+          child: _scrollView(),
+          onNotification: (ScrollNotification scrollInfo) {
+            if (scrollInfo is ScrollUpdateNotification) {
+              double offset = scrollInfo.metrics.pixels;
+              double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
+              rotationAngleText = "Angle: (${offset.toStringAsFixed(2)} - ${spinnerWidth.toStringAsFixed(2)}) * 360 / ${contentHeight.toStringAsFixed(2)} \n";
+              if (scrollInfo.dragDetails != null) {
+                double x = _translatedX(scrollInfo.dragDetails!.localPosition);
+                double y = _translatedY(scrollInfo.dragDetails!.localPosition);
+                rotationMultiplier = (x > 0) ? -1 : 1;
               }
-              return true;
-            },
+              setState(() {
+                rotationAngleText += "${rotationMultiplier} * ${newRotationAngle}";
+                rotationAngle = rotationMultiplier * newRotationAngle;
+                //debugPrint("Rotation Angle: $rotationAngle");
+              });
+              if (offset <= 0) {
+                controller.jumpTo(spinnerWidth);
+              } else if (offset >= (spinnerWidth + contentHeight)) {
+                controller.jumpTo(spinnerWidth);
+              }
+            }
+            return true;
+          },
+        ),
+      ),
+    );
+  }
+
+  Positioned _segments(List<Widget> elements) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Transform.rotate(
+        angle: _radians(rotationAngle),
+        child: Container(
+          width: spinnerWidth,
+          height: spinnerWidth,
+          child: Stack(
+            children: elements,
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Positioned _circles(List<Widget> circles) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Stack(
+        children: circles,
       ),
     );
   }
 
   Widget _scrollView() {
+    double height = (2 * spinnerWidth + contentHeight);
+    double viewHeight = 20;
+    double numberOfElements = height / viewHeight;
+    List<Widget> views = [];
+    int i = 0;
+    for (i = 0; i < numberOfElements - 1; i++) {
+      views.add(
+        _scrollMiniView(viewHeight, i),
+      );
+    }
+    views.add(
+      Expanded(
+        child: _scrollMiniView(viewHeight, i),
+      ),
+    );
     return SingleChildScrollView(
       key: scrollKey,
       controller: controller,
+      physics: ClampingScrollPhysics(),
       child: Container(
+        color: Colors.blue,
         height: (2 * spinnerWidth + contentHeight),
+        child: Column(
+          children: views,
+        ),
       ),
     );
   }
 
-  Center _anchorCircle(double anchorRadius) {
-    return Center(
+  Container _scrollMiniView(double viewHeight, int i) {
+    return Container(
+      height: viewHeight,
+      color: (i % 2 == 0) ? Colors.red : Colors.blue,
+      alignment: Alignment.center,
+      child: Text(
+        "$i",
+        style: TextStyle(
+          inherit: false,
+          color: Colors.white,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
+  Widget _anchorCircle(double anchorRadius) {
+    return Container(
+      height: spinnerWidth,
+      width: spinnerWidth,
+      alignment: Alignment.center,
       child: Container(
         height: anchorRadius * 2,
         width: anchorRadius * 2,
@@ -187,8 +280,11 @@ class _SpinnerState extends State<Spinner> {
     );
   }
 
-  Center _innerCircle() {
-    return Center(
+  Container _innerCircle() {
+    return Container(
+      height: spinnerWidth,
+      width: spinnerWidth,
+      alignment: Alignment.center,
       child: Container(
         height: innerRadius * 2,
         width: innerRadius * 2,
@@ -197,7 +293,7 @@ class _SpinnerState extends State<Spinner> {
           color: Colors.transparent,
           border: Border.all(
             width: 2,
-            color: Colors.green,
+            color: Colors.black,
           ),
         ),
       ),

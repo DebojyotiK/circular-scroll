@@ -45,8 +45,9 @@ class HomePage extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
     return Container(
       color: Colors.white,
-      alignment: Alignment.center,
-      child: Spinner(radius: width * 0.9 / 2),
+      alignment: Alignment.topLeft,
+      padding: EdgeInsets.only(top: 64),
+      child: Spinner(radius: width * 0.8 / 2),
     );
   }
 }
