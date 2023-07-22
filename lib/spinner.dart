@@ -56,9 +56,9 @@ class _SpinnerState extends State<Spinner> {
     final RenderBox box = context.findRenderObject() as RenderBox;
     // find the coordinate
     final Offset localOffset = box.globalToLocal(details.globalPosition);
-    // debugPrint("Theta: ${pointToDegree(localOffset)}");
-    // debugPrint("Is Inside Area: ${checkIfPointClickedOnElement(localOffset)}");
-    // debugPrint("Element clicked: ${shiftByElements(getElement(localOffset), 3)}");
+    debugPrint("Theta: ${pointToDegree(localOffset)}");
+    debugPrint("Is Inside Area: ${checkIfPointClickedOnElement(localOffset)}");
+    debugPrint("Element clicked: ${getElement(localOffset)}");
   }
 
   @override
@@ -75,8 +75,10 @@ class _SpinnerState extends State<Spinner> {
     anchorRadius = innerRadius + circleElementHeight / 2;
     circleElementWidth = 20;
     for (int i = 0; i < numberOfItems; i++) {
-      _elementDescriptions.add(ElementDescription((90 + i * theta), theta));
+      _elementDescriptions.add(ElementDescription((theta / 2 + i * theta), theta));
     }
+    debugPrint("Initialized");
+    debugPrint("Spinner Width: $spinnerWidth");
   }
 
   @override
@@ -88,20 +90,22 @@ class _SpinnerState extends State<Spinner> {
     circles.add(_innerCircle());
     for (var elementDescription in _elementDescriptions) {
       int elementIndex = (_elementDescriptions.indexOf(elementDescription));
-      double dx = anchorRadius * (cos(_radians(elementDescription.anchorAngle)) - cos(_radians(90)));
-      double dy = -1 * anchorRadius * (sin(_radians(elementDescription.anchorAngle)) - sin(_radians(90)));
-      double rotationAngle = _radians(-1 * elementIndex * theta);
+      double x = anchorRadius * (cos(_radians(elementDescription.anchorAngle)));
+      double y = anchorRadius * (sin(_radians(elementDescription.anchorAngle)));
+      double dx = x - anchorRadius;
+      double dy = -1 * y;
+      double rotationAngle = _radians(-1 * elementDescription.anchorAngle);
       Offset translation = Offset(dx, dy);
       Widget container = Positioned(
-        top: 0,
-        left: (spinnerWidth - circleElementWidth) / 2,
+        top: (spinnerWidth - circleElementWidth) / 2,
+        right: 0,
         child: Transform.translate(
           offset: translation,
           child: Transform.rotate(
             angle: rotationAngle,
             child: Container(
-              height: circleElementHeight,
-              width: circleElementWidth,
+              height: circleElementWidth,
+              width: circleElementHeight,
               color: Colors.black,
               alignment: Alignment.center,
               child: Text(
@@ -150,47 +154,50 @@ class _SpinnerState extends State<Spinner> {
 
   Positioned _scrollContainer() {
     return Positioned(
-      top: spinnerWidth,
+      top: 0,
       left: 0,
       right: 0,
-      child: Container(
-        height: spinnerWidth,
-        child: NotificationListener<ScrollNotification>(
-          child: _scrollView(),
-          onNotification: (ScrollNotification scrollInfo) {
-            if (scrollInfo is UserScrollNotification) {
-              // if (scrollInfo.direction == ScrollDirection.forward) {
-              //   rotationMultiplier = 1;
-              // } else if (scrollInfo.direction == ScrollDirection.reverse) {
-              //   rotationMultiplier = -1;
-              // }
-              debugPrint("Direction: ${scrollInfo.direction}");
-            } else if (scrollInfo is ScrollUpdateNotification) {
-              double delta = 0;
-              if (offset != null) {
-                delta = (scrollInfo.metrics.pixels - offset!) * 360 * repeatContent / contentHeight;
-              }
-              offset = scrollInfo.metrics.pixels;
+      child: Opacity(
+        opacity: 0.2,
+        child: Container(
+          height: spinnerWidth,
+          child: NotificationListener<ScrollNotification>(
+            child: _scrollView(),
+            onNotification: (ScrollNotification scrollInfo) {
+              if (scrollInfo is UserScrollNotification) {
+                // if (scrollInfo.direction == ScrollDirection.forward) {
+                //   rotationMultiplier = 1;
+                // } else if (scrollInfo.direction == ScrollDirection.reverse) {
+                //   rotationMultiplier = -1;
+                // }
+                debugPrint("Direction: ${scrollInfo.direction}");
+              } else if (scrollInfo is ScrollUpdateNotification) {
+                double delta = 0;
+                if (offset != null) {
+                  delta = (scrollInfo.metrics.pixels - offset!) * 360 * repeatContent / contentHeight;
+                }
+                offset = scrollInfo.metrics.pixels;
 
-              //double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
-              rotationAngleText = "";
-              if (scrollInfo.dragDetails != null) {
-                double x = _translatedX(scrollInfo.dragDetails!.localPosition);
-                double y = _translatedY(scrollInfo.dragDetails!.localPosition);
-                rotationMultiplier = (x > 0) ? -1 : 1;
+                //double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
+                rotationAngleText = "";
+                if (scrollInfo.dragDetails != null) {
+                  double x = _translatedX(scrollInfo.dragDetails!.localPosition);
+                  double y = _translatedY(scrollInfo.dragDetails!.localPosition);
+                  rotationMultiplier = (x > 0) ? -1 : 1;
+                }
+                setState(() {
+                  rotationAngle += rotationMultiplier * delta;
+                  rotationAngleText += "Rotation Angle: $rotationAngle";
+                });
+                if (offset! <= 0) {
+                  controller.jumpTo(spinnerWidth);
+                } else if (offset! >= (spinnerWidth + contentHeight)) {
+                  controller.jumpTo(spinnerWidth);
+                }
               }
-              setState(() {
-                rotationAngle += rotationMultiplier * delta;
-                rotationAngleText += "Rotation Angle: $rotationAngle";
-              });
-              if (offset! <= 0) {
-                controller.jumpTo(spinnerWidth);
-              } else if (offset! >= (spinnerWidth + contentHeight)) {
-                controller.jumpTo(spinnerWidth);
-              }
-            }
-            return true;
-          },
+              return true;
+            },
+          ),
         ),
       ),
     );
@@ -241,15 +248,18 @@ class _SpinnerState extends State<Spinner> {
         child: _scrollMiniView(viewHeight, i),
       ),
     );
-    return SingleChildScrollView(
-      key: scrollKey,
-      controller: controller,
-      physics: ClampingScrollPhysics(),
-      child: Container(
-        color: Colors.blue,
-        height: (2 * spinnerWidth + contentHeight),
-        child: Column(
-          children: views,
+    return GestureDetector(
+      onTapDown: (details) => onTapDown(context, details),
+      child: SingleChildScrollView(
+        key: scrollKey,
+        controller: controller,
+        physics: ClampingScrollPhysics(),
+        child: Container(
+          color: Colors.blue,
+          height: (2 * spinnerWidth + contentHeight),
+          child: Column(
+            children: views,
+          ),
         ),
       ),
     );
@@ -379,6 +389,7 @@ class _SpinnerState extends State<Spinner> {
 
   int getElement(Offset offset) {
     double tappedDegree = pointToDegree(offset);
+    tappedDegree = (tappedDegree + rotationAngle) % 360;
     return tappedDegree ~/ theta;
   }
 
