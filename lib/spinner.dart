@@ -127,7 +127,7 @@ class _SpinnerState extends State<Spinner> {
         Container(
           color: Colors.green,
           width: spinnerWidth,
-          height: spinnerWidth * 2,
+          height: spinnerWidth,
           child: Stack(
             children: [
               _circles(circles),
