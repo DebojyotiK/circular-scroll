@@ -117,24 +117,17 @@ class _SpinnerState extends State<Spinner> {
           NotificationListener<ScrollNotification>(
             child: _scrollView(),
             onNotification: (ScrollNotification scrollInfo) {
-              if (scrollInfo is ScrollStartNotification) {
+              if (scrollInfo is ScrollUpdateNotification) {
+                double offset = scrollInfo.metrics.pixels;
+                double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
                 if (scrollInfo.dragDetails != null) {
                   double x = _translatedX(scrollInfo.dragDetails!.localPosition);
                   double y = _translatedY(scrollInfo.dragDetails!.localPosition);
                   rotationMultiplier = (x > 0) ? -1 : 1;
                 }
-              }
-              else if (scrollInfo is ScrollUpdateNotification) {
-                double offset = scrollInfo.metrics.pixels;
-                double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
-                debugPrint("Rotation Angle: ${scrollInfo.scrollDelta}");
-                // if (scrollInfo.dragDetails != null) {
-                //   double x = _translatedX(scrollInfo.dragDetails!.localPosition);
-                //   double y = _translatedY(scrollInfo.dragDetails!.localPosition);
-                //   rotationMultiplier = (x > 0) ? -1 : 1;
-                // }
                 setState(() {
                   rotationAngle = rotationMultiplier * newRotationAngle;
+                  debugPrint("Rotation Angle: $rotationAngle");
                 });
                 if (offset <= 0) {
                   controller.jumpTo(spinnerWidth);
