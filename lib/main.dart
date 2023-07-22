@@ -49,7 +49,7 @@ class HomePage extends StatelessWidget {
       padding: EdgeInsets.only(top: 64),
       child: Spinner(
         radius: width * 0.8 / 2,
-        elementsPerHalf: 3,
+        elementsPerHalf: 2,
       ),
     );
   }

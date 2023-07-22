@@ -10,8 +10,8 @@ class ElementDescription {
   ElementDescription(
     this.anchorAngle,
     double spanTheta,
-  )   : startAngle = anchorAngle - spanTheta / 2,
-        endAngle = anchorAngle + spanTheta / 2;
+  )   : startAngle = anchorAngle + spanTheta / 2,
+        endAngle = anchorAngle - spanTheta / 2;
 }
 
 class Spinner extends StatefulWidget {
@@ -36,7 +36,7 @@ class _SpinnerState extends State<Spinner> {
   late int numberOfItems;
   late ScrollController controller;
   GlobalKey<_SpinnerState> scrollKey = GlobalKey<_SpinnerState>();
-  double rotationAngle = 0;
+  double _circleRotationAngle = 0;
   int page = 0;
   String rotationAngleText = "";
   late double contentHeight;
@@ -75,7 +75,7 @@ class _SpinnerState extends State<Spinner> {
     anchorRadius = innerRadius + circleElementHeight / 2;
     circleElementWidth = 20;
     for (int i = 0; i < numberOfItems; i++) {
-      _elementDescriptions.add(ElementDescription((theta / 2 + i * theta), theta));
+      _elementDescriptions.add(ElementDescription(-1 * (theta / 2 + i * theta), theta));
     }
     debugPrint("Initialized");
     debugPrint("Spinner Width: $spinnerWidth");
@@ -90,11 +90,11 @@ class _SpinnerState extends State<Spinner> {
     circles.add(_innerCircle());
     for (var elementDescription in _elementDescriptions) {
       int elementIndex = (_elementDescriptions.indexOf(elementDescription));
-      double x = anchorRadius * (cos(_radians(elementDescription.anchorAngle)));
-      double y = anchorRadius * (sin(_radians(elementDescription.anchorAngle)));
+      double x = anchorRadius * (cos(_radians(elementDescription.anchorAngle.abs())));
+      double y = anchorRadius * (sin(_radians(elementDescription.anchorAngle.abs())));
       double dx = x - anchorRadius;
       double dy = -1 * y;
-      double rotationAngle = _radians(-1 * elementDescription.anchorAngle);
+      double rotationAngle = _radians(elementDescription.anchorAngle);
       Offset translation = Offset(dx, dy);
       Widget container = Positioned(
         top: (spinnerWidth - circleElementWidth) / 2,
@@ -131,7 +131,7 @@ class _SpinnerState extends State<Spinner> {
           child: Stack(
             children: [
               _circles(circles),
-              _segments(elements),
+              _segmentView(elements),
               _scrollContainer(),
             ],
           ),
@@ -186,8 +186,8 @@ class _SpinnerState extends State<Spinner> {
                   rotationMultiplier = (x > 0) ? -1 : 1;
                 }
                 setState(() {
-                  rotationAngle += rotationMultiplier * delta;
-                  rotationAngleText += "Rotation Angle: $rotationAngle";
+                  _circleRotationAngle += rotationMultiplier * delta;
+                  rotationAngleText += "Rotation Angle: $_circleRotationAngle";
                 });
                 if (offset! <= 0) {
                   controller.jumpTo(spinnerWidth);
@@ -203,13 +203,13 @@ class _SpinnerState extends State<Spinner> {
     );
   }
 
-  Positioned _segments(List<Widget> elements) {
+  Positioned _segmentView(List<Widget> elements) {
     return Positioned(
       top: 0,
       left: 0,
       right: 0,
       child: Transform.rotate(
-        angle: _radians(rotationAngle),
+        angle: _radians(_circleRotationAngle),
         child: Container(
           width: spinnerWidth,
           height: spinnerWidth,
@@ -366,13 +366,13 @@ class _SpinnerState extends State<Spinner> {
     double y = _translatedY(offset);
     double theta = _degrees(atan(y / x));
     if (x > 0 && y < 0) {
-      return theta.abs();
+      return theta;
     } else if (x < 0 && y < 0) {
-      return 180 - theta.abs();
+      return -180 + theta;
     } else if (x < 0 && y > 0) {
-      return 180 + theta.abs();
+      return -180 + theta;
     } else {
-      return 360 - theta.abs();
+      return -360 + theta;
     }
   }
 
@@ -389,7 +389,7 @@ class _SpinnerState extends State<Spinner> {
 
   int getElement(Offset offset) {
     double tappedDegree = pointToDegree(offset);
-    tappedDegree = (tappedDegree + rotationAngle) % 360;
+    tappedDegree = (tappedDegree.abs() + _circleRotationAngle) % 360;
     return tappedDegree ~/ theta;
   }
 
