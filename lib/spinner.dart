@@ -118,14 +118,17 @@ class _SpinnerState extends State<Spinner> {
             ],
           ),
         ),
-        Text(
-          rotationAngleText,
-          style: const TextStyle(
-            inherit: false,
-            color: Colors.black,
-            fontSize: 20,
+        Container(
+          width: spinnerWidth,
+          child: Text(
+            rotationAngleText,
+            style: const TextStyle(
+              inherit: false,
+              color: Colors.black,
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -141,6 +144,7 @@ class _SpinnerState extends State<Spinner> {
         child: NotificationListener<ScrollNotification>(
           child: _scrollView(),
           onNotification: (ScrollNotification scrollInfo) {
+            if (scrollInfo is )
             if (scrollInfo is ScrollUpdateNotification) {
               double offset = scrollInfo.metrics.pixels;
               double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
