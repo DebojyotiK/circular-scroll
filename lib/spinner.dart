@@ -29,7 +29,6 @@ class _SpinnerState extends State<Spinner> {
   late double circleElementWidth;
   double? offset;
   final int repeatContent = 5;
-  late double initialScrollOffset;
 
   // Method to find the coordinates and
   // setstate method that will set the value to
@@ -48,11 +47,10 @@ class _SpinnerState extends State<Spinner> {
   void initState() {
     super.initState();
     spinnerWidth = widget.radius * 2;
+    controller = ScrollController(initialScrollOffset: spinnerWidth);
     theta = 360 / numberOfItems;
     outerRadius = spinnerWidth / 2;
     contentHeight = 2 * pi * outerRadius * 0.5 * repeatContent;
-    initialScrollOffset = spinnerWidth + contentHeight / 2;
-    controller = ScrollController(initialScrollOffset: initialScrollOffset);
     innerRadius = 0.7 * outerRadius;
     circleElementHeight = outerRadius - innerRadius;
     anchorRadius = innerRadius + circleElementHeight / 2;
@@ -156,7 +154,8 @@ class _SpinnerState extends State<Spinner> {
               //   rotationMultiplier = -1;
               // }
               debugPrint("Direction: ${scrollInfo.direction}");
-            } else if (scrollInfo is ScrollUpdateNotification) {
+            }
+            else if (scrollInfo is ScrollUpdateNotification) {
               double delta = 0;
               if (offset != null) {
                 delta = (scrollInfo.metrics.pixels - offset!) * 360 * repeatContent / contentHeight;
@@ -175,9 +174,9 @@ class _SpinnerState extends State<Spinner> {
                 rotationAngleText += "Rotation Angle: $rotationAngle";
               });
               if (offset! <= 0) {
-                controller.jumpTo(initialScrollOffset);
+                controller.jumpTo(spinnerWidth);
               } else if (offset! >= (spinnerWidth + contentHeight)) {
-                controller.jumpTo(initialScrollOffset);
+                controller.jumpTo(spinnerWidth);
               }
             }
             return true;
