@@ -20,6 +20,7 @@ class _SpinnerState extends State<Spinner> {
   late ScrollController controller;
   GlobalKey<_SpinnerState> scrollKey = GlobalKey<_SpinnerState>();
   double rotationAngle = 0;
+  int page = 0;
   String rotationAngleText = "";
   late double contentHeight;
   int rotationMultiplier = 1;
@@ -27,6 +28,8 @@ class _SpinnerState extends State<Spinner> {
   late double anchorRadius;
   late double circleElementWidth;
   double? offset;
+  final int repeatContent = 5;
+  late double initialScrollOffset;
 
   // Method to find the coordinates and
   // setstate method that will set the value to
@@ -45,10 +48,11 @@ class _SpinnerState extends State<Spinner> {
   void initState() {
     super.initState();
     spinnerWidth = widget.radius * 2;
-    controller = ScrollController(initialScrollOffset: spinnerWidth);
     theta = 360 / numberOfItems;
     outerRadius = spinnerWidth / 2;
-    contentHeight = 2 * pi * outerRadius * 0.5;
+    contentHeight = 2 * pi * outerRadius * 0.5 * repeatContent;
+    initialScrollOffset = spinnerWidth + contentHeight / 2;
+    controller = ScrollController(initialScrollOffset: initialScrollOffset);
     innerRadius = 0.7 * outerRadius;
     circleElementHeight = outerRadius - innerRadius;
     anchorRadius = innerRadius + circleElementHeight / 2;
@@ -152,16 +156,15 @@ class _SpinnerState extends State<Spinner> {
               //   rotationMultiplier = -1;
               // }
               debugPrint("Direction: ${scrollInfo.direction}");
-            }
-            if (scrollInfo is ScrollUpdateNotification) {
+            } else if (scrollInfo is ScrollUpdateNotification) {
               double delta = 0;
               if (offset != null) {
-                delta = (scrollInfo.metrics.pixels - offset!) * 360 / contentHeight;
+                delta = (scrollInfo.metrics.pixels - offset!) * 360 * repeatContent / contentHeight;
               }
               offset = scrollInfo.metrics.pixels;
 
               //double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
-              rotationAngleText = "delta: $delta \n";
+              rotationAngleText = "";
               if (scrollInfo.dragDetails != null) {
                 double x = _translatedX(scrollInfo.dragDetails!.localPosition);
                 double y = _translatedY(scrollInfo.dragDetails!.localPosition);
@@ -172,9 +175,9 @@ class _SpinnerState extends State<Spinner> {
                 rotationAngleText += "Rotation Angle: $rotationAngle";
               });
               if (offset! <= 0) {
-                controller.jumpTo(spinnerWidth);
+                controller.jumpTo(initialScrollOffset);
               } else if (offset! >= (spinnerWidth + contentHeight)) {
-                controller.jumpTo(spinnerWidth);
+                controller.jumpTo(initialScrollOffset);
               }
             }
             return true;
