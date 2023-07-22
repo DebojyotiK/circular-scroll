@@ -26,6 +26,7 @@ class _SpinnerState extends State<Spinner> {
   late double circleElementHeight;
   late double anchorRadius;
   late double circleElementWidth;
+  double? offset;
 
   // Method to find the coordinates and
   // setstate method that will set the value to
@@ -144,24 +145,35 @@ class _SpinnerState extends State<Spinner> {
         child: NotificationListener<ScrollNotification>(
           child: _scrollView(),
           onNotification: (ScrollNotification scrollInfo) {
-            if (scrollInfo is )
+            if (scrollInfo is UserScrollNotification) {
+              // if (scrollInfo.direction == ScrollDirection.forward) {
+              //   rotationMultiplier = 1;
+              // } else if (scrollInfo.direction == ScrollDirection.reverse) {
+              //   rotationMultiplier = -1;
+              // }
+              debugPrint("Direction: ${scrollInfo.direction}");
+            }
             if (scrollInfo is ScrollUpdateNotification) {
-              double offset = scrollInfo.metrics.pixels;
-              double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
-              rotationAngleText = "Angle: (${offset.toStringAsFixed(2)} - ${spinnerWidth.toStringAsFixed(2)}) * 360 / ${contentHeight.toStringAsFixed(2)} \n";
+              double delta = 0;
+              if (offset != null) {
+                delta = (scrollInfo.metrics.pixels - offset!) * 360 / contentHeight;
+              }
+              offset = scrollInfo.metrics.pixels;
+
+              //double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
+              rotationAngleText = "delta: $delta \n";
               if (scrollInfo.dragDetails != null) {
                 double x = _translatedX(scrollInfo.dragDetails!.localPosition);
                 double y = _translatedY(scrollInfo.dragDetails!.localPosition);
                 rotationMultiplier = (x > 0) ? -1 : 1;
               }
               setState(() {
-                rotationAngleText += "${rotationMultiplier} * ${newRotationAngle}";
-                rotationAngle = rotationMultiplier * newRotationAngle;
-                //debugPrint("Rotation Angle: $rotationAngle");
+                rotationAngle += rotationMultiplier * delta;
+                rotationAngleText += "Rotation Angle: $rotationAngle";
               });
-              if (offset <= 0) {
+              if (offset! <= 0) {
                 controller.jumpTo(spinnerWidth);
-              } else if (offset >= (spinnerWidth + contentHeight)) {
+              } else if (offset! >= (spinnerWidth + contentHeight)) {
                 controller.jumpTo(spinnerWidth);
               }
             }
