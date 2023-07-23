@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:spinner/element_description.dart';
 
+import 'math_utils.dart';
+
 class SpinnerBloc {
   final double spinnerWidth;
   final double radius;
@@ -12,7 +14,6 @@ class SpinnerBloc {
   final ScrollController controller;
   double circleRotationAngle = 0;
   int page = 0;
-  String rotationAngleText = "";
   final double contentHeight;
   int rotationMultiplier = 1;
   final double circleElementHeight;
@@ -23,17 +24,23 @@ class SpinnerBloc {
   final List<ElementDescription> elementDescriptions = [];
   final AnimationController animationController;
   bool _isAnimating = false;
+  bool _isScrolling = false;
 
   bool get isAnimating => _isAnimating;
   late Animation<double> _rotationAnimation;
 
+  bool get isScrolling => _isScrolling;
+
   Animation<double> get rotationAnimation => _rotationAnimation;
+
+  final VoidCallback onFrameUpdate;
 
   SpinnerBloc({
     required this.radius,
     required int elementsPerHalf,
     required this.innerRadius,
     required this.animationController,
+    required this.onFrameUpdate,
   })  : spinnerWidth = 2 * radius,
         controller = ScrollController(initialScrollOffset: 2 * radius),
         numberOfItems = 2 * elementsPerHalf,
@@ -50,14 +57,40 @@ class SpinnerBloc {
     }
   }
 
-  void scrollToNearest(VoidCallback onFrameUpdate) {
+  void scrollToNearest() {
+    double newCircleNearestRotationAngle = (circleRotationAngle ~/ (theta / 2) / 2).ceil() * theta;
+    _rotateToAngle(newCircleNearestRotationAngle);
+  }
+
+  void bringTappedElementToCenter(Offset offset) {
+    double tappedDegree = (elementDescriptions[getElementIndex(offset)].anchorAngle + circleRotationAngle) % 360;
+    double adjustedDegree = _getAdjustedDegree(tappedDegree);
+    double endAngle = circleRotationAngle + adjustedDegree;
+    _rotateToAngle(endAngle);
+  }
+
+  double _getAdjustedDegree(double tappedDegree) {
+    late double adjustedDegree;
+    if (tappedDegree >= 0 && tappedDegree <= 90) {
+      adjustedDegree = -1 * (90 + tappedDegree);
+    } else if (tappedDegree >= 270 && tappedDegree <= 360) {
+      adjustedDegree = -1 * (90 - (360 - tappedDegree));
+    } else if (tappedDegree >= 90 && tappedDegree <= 270) {
+      adjustedDegree = (270 - tappedDegree);
+    }
+    return adjustedDegree;
+  }
+
+  void _rotateToAngle(double newCircleRotationAngle) {
     _isAnimating = true;
-    double newCircleRotationAngle = (circleRotationAngle ~/ (theta / 2) / 2).ceil() * theta;
     double diff = (newCircleRotationAngle - circleRotationAngle).abs();
-    _rotationAnimation = Tween(begin: circleRotationAngle, end: newCircleRotationAngle).animate(
+    _rotationAnimation = Tween(
+      begin: circleRotationAngle,
+      end: newCircleRotationAngle,
+    ).animate(
       CurvedAnimation(
         parent: animationController,
-        curve: Curves.bounceInOut,
+        curve: Curves.easeInOutCirc,
       ),
     )
       ..addStatusListener((status) {
@@ -73,5 +106,70 @@ class SpinnerBloc {
     animationController.reset();
     animationController.duration = Duration(milliseconds: (2000 * diff) ~/ 180);
     animationController.forward();
+  }
+
+  double pointToDegree(Offset offset) {
+    double x = _translatedX(offset);
+    double y = _translatedY(offset);
+    double theta = MathUtils.degrees(atan(y / x));
+    if (x > 0 && y < 0) {
+      return theta;
+    } else if (x < 0 && y < 0) {
+      return -180 + theta;
+    } else if (x < 0 && y > 0) {
+      return -180 + theta;
+    } else {
+      return -360 + theta;
+    }
+  }
+
+  double _translatedY(Offset offset) => offset.dy - spinnerWidth / 2;
+
+  double _translatedX(Offset offset) => offset.dx - spinnerWidth / 2;
+
+  bool checkIfPointClickedOnElement(Offset offset) {
+    double x = _translatedX(offset);
+    double y = _translatedY(offset);
+    double radius = sqrt(pow(x, 2) + pow(y, 2));
+    return (radius >= innerRadius && radius <= radius);
+  }
+
+  int getElementIndex(Offset offset) {
+    double tappedDegree = pointToDegree(offset);
+    double adjustedTappedDegree = (tappedDegree.abs() + circleRotationAngle) % 360;
+    return adjustedTappedDegree ~/ theta;
+  }
+
+  int shiftByElements(int actualIndex, int shiftBy) {
+    return (actualIndex + (numberOfItems - shiftBy)) % numberOfItems;
+  }
+
+  void processScrollStartNotification(ScrollStartNotification scrollInfo) {
+    _isScrolling = true;
+  }
+
+  void processScrollUpdateNotification(ScrollUpdateNotification scrollInfo) {
+    double delta = 0;
+    if (offset != null) {
+      delta = (scrollInfo.metrics.pixels - offset!) * 360 * SpinnerBloc.repeatContent / contentHeight;
+    }
+    offset = scrollInfo.metrics.pixels;
+    if (scrollInfo.dragDetails != null) {
+      double x = _translatedX(scrollInfo.dragDetails!.localPosition);
+      double y = _translatedY(scrollInfo.dragDetails!.localPosition);
+      rotationMultiplier = (x > 0) ? -1 : 1;
+    }
+    circleRotationAngle += rotationMultiplier * delta;
+    onFrameUpdate();
+    if (offset! <= 0) {
+      controller.jumpTo(spinnerWidth);
+    } else if (offset! >= (spinnerWidth + contentHeight)) {
+      controller.jumpTo(spinnerWidth);
+    }
+  }
+
+  void processScrollEndNotification(ScrollEndNotification scrollInfo) {
+    _isScrolling = false;
+    scrollToNearest();
   }
 }

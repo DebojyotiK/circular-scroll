@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:spinner/circular_scroll_view.dart';
 import 'package:spinner/spinner_bloc.dart';
@@ -30,13 +28,12 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
   // setstate method that will set the value to
   // variable posx and posy.
   void onTapDown(BuildContext context, TapDownDetails details) {
-    // creating instance of renderbox
-    final RenderBox box = context.findRenderObject() as RenderBox;
-    // find the coordinate
-    final Offset localOffset = box.globalToLocal(details.globalPosition);
-    debugPrint("Theta: ${pointToDegree(localOffset)}");
-    debugPrint("Is Inside Area: ${checkIfPointClickedOnElement(localOffset)}");
-    debugPrint("Element clicked: ${getElement(localOffset)}");
+    Future.delayed(const Duration(milliseconds: 50), () {
+      if (!_bloc.isScrolling) {
+        debugPrint("Segment Tapped");
+        _bloc.bringTappedElementToCenter(details.localPosition);
+      }
+    });
   }
 
   @override
@@ -50,6 +47,9 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
         duration: const Duration(milliseconds: 500),
         vsync: this,
       ),
+      onFrameUpdate: () {
+        setState(() {});
+      },
     );
     debugPrint("Initialized");
     debugPrint("Spinner Width: ${_bloc.spinnerWidth}");
@@ -73,7 +73,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
         SizedBox(
           width: _bloc.spinnerWidth,
           child: Text(
-            _bloc.rotationAngleText,
+            "Rotation Angle: ${_bloc.circleRotationAngle}",
             style: const TextStyle(
               inherit: false,
               color: Colors.black,
@@ -84,9 +84,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
         ),
         GestureDetector(
           onTap: () {
-            _bloc.scrollToNearest(() {
-              setState(() {});
-            });
+            _bloc.scrollToNearest();
           },
           child: SizedBox(
             width: _bloc.spinnerWidth,
@@ -117,40 +115,12 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
           onTapDown: (details) => onTapDown(context, details),
         ),
         onNotification: (ScrollNotification scrollInfo) {
-          if (scrollInfo is UserScrollNotification) {
-            // if (scrollInfo.direction == ScrollDirection.forward) {
-            //   rotationMultiplier = 1;
-            // } else if (scrollInfo.direction == ScrollDirection.reverse) {
-            //   rotationMultiplier = -1;
-            // }
-            debugPrint("Direction: ${scrollInfo.direction}");
+          if (scrollInfo is ScrollStartNotification) {
+            _bloc.processScrollStartNotification(scrollInfo);
           } else if (scrollInfo is ScrollUpdateNotification) {
-            double delta = 0;
-            if (_bloc.offset != null) {
-              delta = (scrollInfo.metrics.pixels - _bloc.offset!) * 360 * SpinnerBloc.repeatContent / _bloc.contentHeight;
-            }
-            _bloc.offset = scrollInfo.metrics.pixels;
-
-            //double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
-            _bloc.rotationAngleText = "";
-            if (scrollInfo.dragDetails != null) {
-              double x = _translatedX(scrollInfo.dragDetails!.localPosition);
-              double y = _translatedY(scrollInfo.dragDetails!.localPosition);
-              _bloc.rotationMultiplier = (x > 0) ? -1 : 1;
-            }
-            setState(() {
-              _bloc.circleRotationAngle += _bloc.rotationMultiplier * delta;
-              _bloc.rotationAngleText += "Rotation Angle: ${_bloc.circleRotationAngle}";
-            });
-            if (_bloc.offset! <= 0) {
-              _bloc.controller.jumpTo(_bloc.spinnerWidth);
-            } else if (_bloc.offset! >= (_bloc.spinnerWidth + _bloc.contentHeight)) {
-              _bloc.controller.jumpTo(_bloc.spinnerWidth);
-            }
+            _bloc.processScrollUpdateNotification(scrollInfo);
           } else if (scrollInfo is ScrollEndNotification) {
-            _bloc.scrollToNearest(() {
-              setState(() {});
-            });
+            _bloc.processScrollEndNotification(scrollInfo);
           }
           return true;
         },
@@ -174,47 +144,5 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
         ),
       ),
     );
-  }
-
-  double pointToDegree(Offset offset) {
-    double x = _translatedX(offset);
-    double y = _translatedY(offset);
-    double theta = MathUtils.degrees(atan(y / x));
-    if (x > 0 && y < 0) {
-      return theta;
-    } else if (x < 0 && y < 0) {
-      return -180 + theta;
-    } else if (x < 0 && y > 0) {
-      return -180 + theta;
-    } else {
-      return -360 + theta;
-    }
-  }
-
-  double _translatedY(Offset offset) => offset.dy - _bloc.spinnerWidth / 2;
-
-  double _translatedX(Offset offset) => offset.dx - _bloc.spinnerWidth / 2;
-
-  bool checkIfPointClickedOnElement(Offset offset) {
-    double x = _translatedX(offset);
-    double y = _translatedY(offset);
-    double radius = sqrt(pow(x, 2) + pow(y, 2));
-    return (radius >= _bloc.innerRadius && radius <= radius);
-  }
-
-  int getElement(Offset offset) {
-    double tappedDegree = pointToDegree(offset);
-    double adjustedTappedDegree = (tappedDegree.abs() + _bloc.circleRotationAngle) % 360;
-    return adjustedTappedDegree ~/ _bloc.theta;
-  }
-
-  double getEndRotationAngle(Offset offset) {
-    double tappedDegree = pointToDegree(offset);
-    double diff = -90 - tappedDegree;
-    return _bloc.circleRotationAngle + diff;
-  }
-
-  int shiftByElements(int actualIndex, int shiftBy) {
-    return (actualIndex + (_bloc.numberOfItems - shiftBy)) % _bloc.numberOfItems;
   }
 }
