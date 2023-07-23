@@ -87,7 +87,7 @@ class _SpinnerState extends State<Spinner> {
           height: spinnerWidth,
           child: Stack(
             children: [
-              _circles(circles),
+              // _circles(circles),
               _segmentView(),
               _scrollContainer(),
             ],
