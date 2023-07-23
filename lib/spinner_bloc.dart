@@ -96,6 +96,10 @@ class SpinnerBloc {
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
           circleRotationAngle = newCircleRotationAngle;
+          double adjustedRotationAngle = circleRotationAngle % 360;
+          double distance = _degreesToDistance(adjustedRotationAngle);
+          //controller.jumpTo(distance);
+          _isAnimating = false;
         }
         onFrameUpdate();
       })
@@ -149,9 +153,9 @@ class SpinnerBloc {
   }
 
   void processScrollUpdateNotification(ScrollUpdateNotification scrollInfo) {
-    double delta = 0;
+    double deltaDegree = 0;
     if (offset != null) {
-      delta = (scrollInfo.metrics.pixels - offset!) * 360 * SpinnerBloc.repeatContent / contentHeight;
+      deltaDegree = _distanceToDegrees(((scrollInfo.metrics.pixels - offset!)));
     }
     offset = scrollInfo.metrics.pixels;
     if (scrollInfo.dragDetails != null) {
@@ -159,7 +163,7 @@ class SpinnerBloc {
       double y = _translatedY(scrollInfo.dragDetails!.localPosition);
       rotationMultiplier = (x > 0) ? -1 : 1;
     }
-    circleRotationAngle += rotationMultiplier * delta;
+    circleRotationAngle += rotationMultiplier * deltaDegree;
     onFrameUpdate();
     if (offset! <= 0) {
       controller.jumpTo(spinnerWidth);
@@ -167,6 +171,10 @@ class SpinnerBloc {
       controller.jumpTo(spinnerWidth);
     }
   }
+
+  double _distanceToDegrees(double translation) => translation * 360 * SpinnerBloc.repeatContent / contentHeight;
+
+  double _degreesToDistance(double degrees) => degrees * contentHeight / (360 * SpinnerBloc.repeatContent);
 
   void processScrollEndNotification(ScrollEndNotification scrollInfo) {
     _isScrolling = false;

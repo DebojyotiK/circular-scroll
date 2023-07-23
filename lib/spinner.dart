@@ -27,13 +27,10 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
   // Method to find the coordinates and
   // setstate method that will set the value to
   // variable posx and posy.
-  void onTapDown(BuildContext context, TapDownDetails details) {
-    Future.delayed(const Duration(milliseconds: 50), () {
-      if (!_bloc.isScrolling) {
-        debugPrint("Segment Tapped");
-        _bloc.bringTappedElementToCenter(details.localPosition);
-      }
-    });
+  void onTapUp(BuildContext context, TapUpDetails details) {
+    if (!_bloc.isScrolling && !_bloc.isAnimating) {
+      _bloc.bringTappedElementToCenter(details.localPosition);
+    }
   }
 
   @override
@@ -44,7 +41,6 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
       innerRadius: 0.7 * widget.radius,
       radius: widget.radius,
       animationController: AnimationController(
-        duration: const Duration(milliseconds: 500),
         vsync: this,
       ),
       onFrameUpdate: () {
@@ -112,7 +108,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
         child: CircularScrollView(
           bloc: _bloc,
           key: scrollKey,
-          onTapDown: (details) => onTapDown(context, details),
+          onTapUp: (details) => onTapUp(context, details),
         ),
         onNotification: (ScrollNotification scrollInfo) {
           if (scrollInfo is ScrollStartNotification) {

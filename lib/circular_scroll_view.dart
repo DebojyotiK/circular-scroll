@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:spinner/spinner_bloc.dart';
 
 class CircularScrollView extends StatelessWidget {
-  final GestureTapDownCallback? onTapDown;
+  final GestureTapUpCallback? onTapUp;
   final SpinnerBloc bloc;
 
   const CircularScrollView({
     Key? key,
-    this.onTapDown,
+    this.onTapUp,
     required this.bloc,
   }) : super(key: key);
 
@@ -33,7 +33,7 @@ class CircularScrollView extends StatelessWidget {
       child: SizedBox(
         height: bloc.spinnerWidth,
         child: GestureDetector(
-          onTapDown: onTapDown,
+          onTapUp: onTapUp,
           child: SingleChildScrollView(
             controller: bloc.controller,
             physics: const ClampingScrollPhysics(),
