@@ -20,7 +20,7 @@ class SpinnerBloc {
   final double circleElementHeight;
   final double anchorRadius;
   final double circleElementWidth = 20;
-  double? offset;
+  double? _previousOffset;
   static int repeatContent = 5;
   final List<ElementDescription> elementDescriptions = [];
   final AnimationController animationController;
@@ -83,7 +83,8 @@ class SpinnerBloc {
           double adjustedRotationAngle = -90 - centerItem.anchorAngle;
           double contentOffset = _degreesToDistance(adjustedRotationAngle) + spinnerWidth;
           debugPrint("Jump to $contentOffset");
-          //controller.jumpTo(contentOffset);
+          controller.jumpTo(contentOffset);
+          _previousOffset = contentOffset;
           _isAnimating = false;
         }
         onFrameUpdate();
@@ -174,10 +175,10 @@ class SpinnerBloc {
   void processScrollUpdateNotification(ScrollUpdateNotification scrollInfo) {
     if (!_isAnimating) {
       double deltaDegree = 0;
-      if (offset != null) {
-        deltaDegree = _distanceToDegrees(((scrollInfo.metrics.pixels - offset!)));
+      if (_previousOffset != null) {
+        deltaDegree = _distanceToDegrees(((scrollInfo.metrics.pixels - _previousOffset!)));
       }
-      offset = scrollInfo.metrics.pixels;
+      _previousOffset = scrollInfo.metrics.pixels;
       if (scrollInfo.dragDetails != null) {
         double x = _translatedX(scrollInfo.dragDetails!.localPosition);
         double y = _translatedY(scrollInfo.dragDetails!.localPosition);
@@ -185,9 +186,9 @@ class SpinnerBloc {
       }
       circleRotationAngle += rotationMultiplier * deltaDegree;
       onFrameUpdate();
-      if (offset! <= 0) {
+      if (_previousOffset! <= 0) {
         controller.jumpTo(spinnerWidth);
-      } else if (offset! >= (spinnerWidth + contentHeight)) {
+      } else if (_previousOffset! >= (spinnerWidth + contentHeight)) {
         controller.jumpTo(spinnerWidth);
       }
     }
