@@ -138,6 +138,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
           sectorHeight: _bloc.circleElementHeight,
           sectorWidth: _bloc.circleElementWidth,
           elementDescriptions: _bloc.elementDescriptions,
+          showDebugCircles: false,
         ),
       ),
     );
