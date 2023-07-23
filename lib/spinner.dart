@@ -77,6 +77,25 @@ class _SpinnerState extends State<Spinner> {
             textAlign: TextAlign.center,
           ),
         ),
+        GestureDetector(
+          onTap: (){
+            setState(() {
+              _bloc.scrollToNearest();
+            });
+          },
+          child: SizedBox(
+            width: _bloc.spinnerWidth,
+            child: const Text(
+              "Scroll to nearest",
+              style: TextStyle(
+                inherit: false,
+                color: Colors.black,
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        )
       ],
     );
   }

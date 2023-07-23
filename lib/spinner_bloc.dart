@@ -41,4 +41,8 @@ class SpinnerBloc {
       elementDescriptions.add(ElementDescription(-1 * (theta / 2 + i * theta), theta));
     }
   }
+
+  void scrollToNearest(){
+    circleRotationAngle = (circleRotationAngle~/(theta/2)/2).ceil()*theta;
+  }
 }
