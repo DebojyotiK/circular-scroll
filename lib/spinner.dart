@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:spinner/circular_scroll_view.dart';
 import 'package:spinner/spinner_bloc.dart';
 import 'package:spinner/spinner_view.dart';
 
@@ -85,48 +86,46 @@ class _SpinnerState extends State<Spinner> {
       top: 0,
       left: 0,
       right: 0,
-      child: Opacity(
-        opacity: 0.2,
-        child: SizedBox(
-          height: _bloc.spinnerWidth,
-          child: NotificationListener<ScrollNotification>(
-            child: _scrollView(),
-            onNotification: (ScrollNotification scrollInfo) {
-              if (scrollInfo is UserScrollNotification) {
-                // if (scrollInfo.direction == ScrollDirection.forward) {
-                //   rotationMultiplier = 1;
-                // } else if (scrollInfo.direction == ScrollDirection.reverse) {
-                //   rotationMultiplier = -1;
-                // }
-                debugPrint("Direction: ${scrollInfo.direction}");
-              } else if (scrollInfo is ScrollUpdateNotification) {
-                double delta = 0;
-                if (_bloc.offset != null) {
-                  delta = (scrollInfo.metrics.pixels - _bloc.offset!) * 360 * SpinnerBloc.repeatContent / _bloc.contentHeight;
-                }
-                _bloc.offset = scrollInfo.metrics.pixels;
-
-                //double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
-                _bloc.rotationAngleText = "";
-                if (scrollInfo.dragDetails != null) {
-                  double x = _translatedX(scrollInfo.dragDetails!.localPosition);
-                  double y = _translatedY(scrollInfo.dragDetails!.localPosition);
-                  _bloc.rotationMultiplier = (x > 0) ? -1 : 1;
-                }
-                setState(() {
-                  _bloc.circleRotationAngle += _bloc.rotationMultiplier * delta;
-                  _bloc.rotationAngleText += "Rotation Angle: ${_bloc.circleRotationAngle}";
-                });
-                if (_bloc.offset! <= 0) {
-                  _bloc.controller.jumpTo(_bloc.spinnerWidth);
-                } else if (_bloc.offset! >= (_bloc.spinnerWidth + _bloc.contentHeight)) {
-                  _bloc.controller.jumpTo(_bloc.spinnerWidth);
-                }
-              }
-              return true;
-            },
-          ),
+      child: NotificationListener<ScrollNotification>(
+        child: CircularScrollView(
+          bloc: _bloc,
+          key: scrollKey,
+          onTapDown: (details) => onTapDown(context, details),
         ),
+        onNotification: (ScrollNotification scrollInfo) {
+          if (scrollInfo is UserScrollNotification) {
+            // if (scrollInfo.direction == ScrollDirection.forward) {
+            //   rotationMultiplier = 1;
+            // } else if (scrollInfo.direction == ScrollDirection.reverse) {
+            //   rotationMultiplier = -1;
+            // }
+            debugPrint("Direction: ${scrollInfo.direction}");
+          } else if (scrollInfo is ScrollUpdateNotification) {
+            double delta = 0;
+            if (_bloc.offset != null) {
+              delta = (scrollInfo.metrics.pixels - _bloc.offset!) * 360 * SpinnerBloc.repeatContent / _bloc.contentHeight;
+            }
+            _bloc.offset = scrollInfo.metrics.pixels;
+
+            //double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
+            _bloc.rotationAngleText = "";
+            if (scrollInfo.dragDetails != null) {
+              double x = _translatedX(scrollInfo.dragDetails!.localPosition);
+              double y = _translatedY(scrollInfo.dragDetails!.localPosition);
+              _bloc.rotationMultiplier = (x > 0) ? -1 : 1;
+            }
+            setState(() {
+              _bloc.circleRotationAngle += _bloc.rotationMultiplier * delta;
+              _bloc.rotationAngleText += "Rotation Angle: ${_bloc.circleRotationAngle}";
+            });
+            if (_bloc.offset! <= 0) {
+              _bloc.controller.jumpTo(_bloc.spinnerWidth);
+            } else if (_bloc.offset! >= (_bloc.spinnerWidth + _bloc.contentHeight)) {
+              _bloc.controller.jumpTo(_bloc.spinnerWidth);
+            }
+          }
+          return true;
+        },
       ),
     );
   }
@@ -145,70 +144,6 @@ class _SpinnerState extends State<Spinner> {
           sectorWidth: _bloc.circleElementWidth,
           elementDescriptions: _bloc.elementDescriptions,
         ),
-      ),
-    );
-  }
-
-  Widget _scrollView() {
-    double height = (2 * _bloc.spinnerWidth + _bloc.contentHeight);
-    double viewHeight = 20;
-    double numberOfElements = height / viewHeight;
-    List<Widget> views = [];
-    int i = 0;
-    for (i = 0; i < numberOfElements - 1; i++) {
-      views.add(
-        _scrollMiniView(viewHeight, i),
-      );
-    }
-    views.add(
-      Expanded(
-        child: _scrollMiniView(viewHeight, i),
-      ),
-    );
-    return GestureDetector(
-      onTapDown: (details) => onTapDown(context, details),
-      child: SingleChildScrollView(
-        key: scrollKey,
-        controller: _bloc.controller,
-        physics: const ClampingScrollPhysics(),
-        child: Container(
-          color: Colors.blue,
-          height: (2 * _bloc.spinnerWidth + _bloc.contentHeight),
-          child: Column(
-            children: views,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Container _scrollMiniView(double viewHeight, int i) {
-    return Container(
-      height: viewHeight,
-      color: (i % 2 == 0) ? Colors.red : Colors.blue,
-      alignment: Alignment.center,
-      child: Text(
-        "$i",
-        style: const TextStyle(
-          inherit: false,
-          color: Colors.white,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  Widget _scrollContent(
-    String text,
-    Color backgroundColor,
-  ) {
-    return Container(
-      color: backgroundColor,
-      alignment: Alignment.center,
-      height: _bloc.spinnerWidth,
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.white),
       ),
     );
   }
