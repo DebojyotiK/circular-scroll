@@ -29,7 +29,7 @@ class CircularScrollView extends StatelessWidget {
       ),
     );
     return Opacity(
-      opacity: 0.2,
+      opacity: 0.5,
       child: SizedBox(
         height: bloc.spinnerWidth,
         child: GestureDetector(

@@ -69,7 +69,8 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
         SizedBox(
           width: _bloc.spinnerWidth,
           child: Text(
-            "Rotation Angle: ${_bloc.circleRotationAngle}",
+            "Rotation Angle: ${_bloc.circleRotationAngle}\n"
+            "offset: ${(_bloc.controller.hasClients) ? _bloc.controller.offset : ""}",
             style: const TextStyle(
               inherit: false,
               color: Colors.black,
@@ -80,7 +81,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
         ),
         GestureDetector(
           onTap: () {
-            _bloc.scrollToNearest();
+            debugPrint("Center Item: ${_bloc.centerItem.description}");
           },
           child: SizedBox(
             width: _bloc.spinnerWidth,
