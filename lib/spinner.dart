@@ -1,9 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:spinner/spinner_bloc.dart';
 import 'package:spinner/spinner_view.dart';
 
-import 'element_description.dart';
+import 'math_utils.dart';
 
 class Spinner extends StatefulWidget {
   final int elementsPerHalf;
@@ -20,24 +21,8 @@ class Spinner extends StatefulWidget {
 }
 
 class _SpinnerState extends State<Spinner> {
-  late double spinnerWidth;
-  late double outerRadius;
-  late double innerRadius;
-  late double theta;
-  late int numberOfItems;
-  late ScrollController controller;
   GlobalKey<_SpinnerState> scrollKey = GlobalKey<_SpinnerState>();
-  double _circleRotationAngle = 0;
-  int page = 0;
-  String rotationAngleText = "";
-  late double contentHeight;
-  int rotationMultiplier = 1;
-  late double circleElementHeight;
-  late double anchorRadius;
-  late double circleElementWidth;
-  double? offset;
-  final int repeatContent = 5;
-  final List<ElementDescription> _elementDescriptions = [];
+  late SpinnerBloc _bloc;
 
   // Method to find the coordinates and
   // setstate method that will set the value to
@@ -55,48 +40,34 @@ class _SpinnerState extends State<Spinner> {
   @override
   void initState() {
     super.initState();
-    spinnerWidth = widget.radius * 2;
-    numberOfItems = 2 * widget.elementsPerHalf;
-    controller = ScrollController(initialScrollOffset: spinnerWidth);
-    theta = 360 / numberOfItems;
-    outerRadius = spinnerWidth / 2;
-    contentHeight = 2 * pi * outerRadius * 0.5 * repeatContent;
-    innerRadius = 0.7 * outerRadius;
-    circleElementHeight = outerRadius - innerRadius;
-    anchorRadius = innerRadius + circleElementHeight / 2;
-    circleElementWidth = 20;
-    for (int i = 0; i < numberOfItems; i++) {
-      _elementDescriptions.add(ElementDescription(-1 * (theta / 2 + i * theta), theta));
-    }
+    _bloc = SpinnerBloc(
+      elementsPerHalf: widget.elementsPerHalf,
+      innerRadius: 0.7 * widget.radius,
+      radius: widget.radius,
+    );
     debugPrint("Initialized");
-    debugPrint("Spinner Width: $spinnerWidth");
+    debugPrint("Spinner Width: ${_bloc.spinnerWidth}");
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> elements = [];
-    List<Widget> circles = [];
-    circles.add(_anchorCircle(anchorRadius));
-    circles.add(_outerCircle());
-    circles.add(_innerCircle());
     return Column(
       children: [
         Container(
           color: Colors.green,
-          width: spinnerWidth,
-          height: spinnerWidth,
+          width: _bloc.spinnerWidth,
+          height: _bloc.spinnerWidth,
           child: Stack(
             children: [
-              // _circles(circles),
               _segmentView(),
               _scrollContainer(),
             ],
           ),
         ),
-        Container(
-          width: spinnerWidth,
+        SizedBox(
+          width: _bloc.spinnerWidth,
           child: Text(
-            rotationAngleText,
+            _bloc.rotationAngleText,
             style: const TextStyle(
               inherit: false,
               color: Colors.black,
@@ -116,8 +87,8 @@ class _SpinnerState extends State<Spinner> {
       right: 0,
       child: Opacity(
         opacity: 0.2,
-        child: Container(
-          height: spinnerWidth,
+        child: SizedBox(
+          height: _bloc.spinnerWidth,
           child: NotificationListener<ScrollNotification>(
             child: _scrollView(),
             onNotification: (ScrollNotification scrollInfo) {
@@ -130,26 +101,26 @@ class _SpinnerState extends State<Spinner> {
                 debugPrint("Direction: ${scrollInfo.direction}");
               } else if (scrollInfo is ScrollUpdateNotification) {
                 double delta = 0;
-                if (offset != null) {
-                  delta = (scrollInfo.metrics.pixels - offset!) * 360 * repeatContent / contentHeight;
+                if (_bloc.offset != null) {
+                  delta = (scrollInfo.metrics.pixels - _bloc.offset!) * 360 * SpinnerBloc.repeatContent / _bloc.contentHeight;
                 }
-                offset = scrollInfo.metrics.pixels;
+                _bloc.offset = scrollInfo.metrics.pixels;
 
                 //double newRotationAngle = (offset - spinnerWidth) * 360 / contentHeight;
-                rotationAngleText = "";
+                _bloc.rotationAngleText = "";
                 if (scrollInfo.dragDetails != null) {
                   double x = _translatedX(scrollInfo.dragDetails!.localPosition);
                   double y = _translatedY(scrollInfo.dragDetails!.localPosition);
-                  rotationMultiplier = (x > 0) ? -1 : 1;
+                  _bloc.rotationMultiplier = (x > 0) ? -1 : 1;
                 }
                 setState(() {
-                  _circleRotationAngle += rotationMultiplier * delta;
-                  rotationAngleText += "Rotation Angle: $_circleRotationAngle";
+                  _bloc.circleRotationAngle += _bloc.rotationMultiplier * delta;
+                  _bloc.rotationAngleText += "Rotation Angle: ${_bloc.circleRotationAngle}";
                 });
-                if (offset! <= 0) {
-                  controller.jumpTo(spinnerWidth);
-                } else if (offset! >= (spinnerWidth + contentHeight)) {
-                  controller.jumpTo(spinnerWidth);
+                if (_bloc.offset! <= 0) {
+                  _bloc.controller.jumpTo(_bloc.spinnerWidth);
+                } else if (_bloc.offset! >= (_bloc.spinnerWidth + _bloc.contentHeight)) {
+                  _bloc.controller.jumpTo(_bloc.spinnerWidth);
                 }
               }
               return true;
@@ -166,31 +137,20 @@ class _SpinnerState extends State<Spinner> {
       left: 0,
       right: 0,
       child: Transform.rotate(
-        angle: _radians(_circleRotationAngle),
+        angle: MathUtils.radians(_bloc.circleRotationAngle),
         child: SpinnerView(
-          anchorRadius: anchorRadius,
-          spinnerWidth: spinnerWidth,
-          sectorHeight: circleElementHeight,
-          sectorWidth: circleElementWidth,
-          elementDescriptions: _elementDescriptions,
+          anchorRadius: _bloc.anchorRadius,
+          spinnerWidth: _bloc.spinnerWidth,
+          sectorHeight: _bloc.circleElementHeight,
+          sectorWidth: _bloc.circleElementWidth,
+          elementDescriptions: _bloc.elementDescriptions,
         ),
       ),
     );
   }
 
-  Positioned _circles(List<Widget> circles) {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: Stack(
-        children: circles,
-      ),
-    );
-  }
-
   Widget _scrollView() {
-    double height = (2 * spinnerWidth + contentHeight);
+    double height = (2 * _bloc.spinnerWidth + _bloc.contentHeight);
     double viewHeight = 20;
     double numberOfElements = height / viewHeight;
     List<Widget> views = [];
@@ -209,11 +169,11 @@ class _SpinnerState extends State<Spinner> {
       onTapDown: (details) => onTapDown(context, details),
       child: SingleChildScrollView(
         key: scrollKey,
-        controller: controller,
-        physics: ClampingScrollPhysics(),
+        controller: _bloc.controller,
+        physics: const ClampingScrollPhysics(),
         child: Container(
           color: Colors.blue,
-          height: (2 * spinnerWidth + contentHeight),
+          height: (2 * _bloc.spinnerWidth + _bloc.contentHeight),
           child: Column(
             children: views,
           ),
@@ -229,67 +189,10 @@ class _SpinnerState extends State<Spinner> {
       alignment: Alignment.center,
       child: Text(
         "$i",
-        style: TextStyle(
+        style: const TextStyle(
           inherit: false,
           color: Colors.white,
           fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  Widget _anchorCircle(double anchorRadius) {
-    return Container(
-      height: spinnerWidth,
-      width: spinnerWidth,
-      alignment: Alignment.center,
-      child: Container(
-        height: anchorRadius * 2,
-        width: anchorRadius * 2,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(anchorRadius),
-          color: Colors.transparent,
-          border: Border.all(
-            width: 2,
-            color: Colors.black,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Center _outerCircle() {
-    return Center(
-      child: Container(
-        height: outerRadius * 2,
-        width: outerRadius * 2,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(outerRadius),
-          color: Colors.transparent,
-          border: Border.all(
-            width: 2,
-            color: Colors.yellow,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Container _innerCircle() {
-    return Container(
-      height: spinnerWidth,
-      width: spinnerWidth,
-      alignment: Alignment.center,
-      child: Container(
-        height: innerRadius * 2,
-        width: innerRadius * 2,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(innerRadius),
-          color: Colors.transparent,
-          border: Border.all(
-            width: 2,
-            color: Colors.black,
-          ),
         ),
       ),
     );
@@ -302,7 +205,7 @@ class _SpinnerState extends State<Spinner> {
     return Container(
       color: backgroundColor,
       alignment: Alignment.center,
-      height: spinnerWidth,
+      height: _bloc.spinnerWidth,
       child: Text(
         text,
         style: const TextStyle(color: Colors.white),
@@ -310,18 +213,10 @@ class _SpinnerState extends State<Spinner> {
     );
   }
 
-  double _radians(double degrees) {
-    return pi * degrees / 180;
-  }
-
-  double _degrees(double radians) {
-    return radians * 180 / pi;
-  }
-
   double pointToDegree(Offset offset) {
     double x = _translatedX(offset);
     double y = _translatedY(offset);
-    double theta = _degrees(atan(y / x));
+    double theta = MathUtils.degrees(atan(y / x));
     if (x > 0 && y < 0) {
       return theta;
     } else if (x < 0 && y < 0) {
@@ -333,30 +228,30 @@ class _SpinnerState extends State<Spinner> {
     }
   }
 
-  double _translatedY(Offset offset) => offset.dy - spinnerWidth / 2;
+  double _translatedY(Offset offset) => offset.dy - _bloc.spinnerWidth / 2;
 
-  double _translatedX(Offset offset) => offset.dx - spinnerWidth / 2;
+  double _translatedX(Offset offset) => offset.dx - _bloc.spinnerWidth / 2;
 
   bool checkIfPointClickedOnElement(Offset offset) {
     double x = _translatedX(offset);
     double y = _translatedY(offset);
     double radius = sqrt(pow(x, 2) + pow(y, 2));
-    return (radius >= innerRadius && radius <= outerRadius);
+    return (radius >= _bloc.innerRadius && radius <= radius);
   }
 
   int getElement(Offset offset) {
     double tappedDegree = pointToDegree(offset);
-    double adjustedTappedDegree = (tappedDegree.abs() + _circleRotationAngle) % 360;
-    return adjustedTappedDegree ~/ theta;
+    double adjustedTappedDegree = (tappedDegree.abs() + _bloc.circleRotationAngle) % 360;
+    return adjustedTappedDegree ~/ _bloc.theta;
   }
 
   double getEndRotationAngle(Offset offset) {
     double tappedDegree = pointToDegree(offset);
     double diff = -90 - tappedDegree;
-    return _circleRotationAngle + diff;
+    return _bloc.circleRotationAngle + diff;
   }
 
   int shiftByElements(int actualIndex, int shiftBy) {
-    return (actualIndex + (numberOfItems - shiftBy)) % numberOfItems;
+    return (actualIndex + (_bloc.numberOfItems - shiftBy)) % _bloc.numberOfItems;
   }
 }
