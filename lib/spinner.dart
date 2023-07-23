@@ -1,18 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:spinner/spinner_view.dart';
 
-class ElementDescription {
-  final double startAngle;
-  final double anchorAngle;
-  final double endAngle;
-
-  ElementDescription(
-    this.anchorAngle,
-    double spanTheta,
-  )   : startAngle = anchorAngle + spanTheta / 2,
-        endAngle = anchorAngle - spanTheta / 2;
-}
+import 'element_description.dart';
 
 class Spinner extends StatefulWidget {
   final int elementsPerHalf;
@@ -46,7 +37,7 @@ class _SpinnerState extends State<Spinner> {
   late double circleElementWidth;
   double? offset;
   final int repeatContent = 5;
-  List<ElementDescription> _elementDescriptions = [];
+  final List<ElementDescription> _elementDescriptions = [];
 
   // Method to find the coordinates and
   // setstate method that will set the value to
@@ -88,40 +79,6 @@ class _SpinnerState extends State<Spinner> {
     circles.add(_anchorCircle(anchorRadius));
     circles.add(_outerCircle());
     circles.add(_innerCircle());
-    for (var elementDescription in _elementDescriptions) {
-      int elementIndex = (_elementDescriptions.indexOf(elementDescription));
-      double x = anchorRadius * (cos(_radians(elementDescription.anchorAngle.abs())));
-      double y = anchorRadius * (sin(_radians(elementDescription.anchorAngle.abs())));
-      double dx = x - anchorRadius;
-      double dy = -1 * y;
-      double rotationAngle = _radians(elementDescription.anchorAngle);
-      Offset translation = Offset(dx, dy);
-      Widget container = Positioned(
-        top: (spinnerWidth - circleElementWidth) / 2,
-        right: 0,
-        child: Transform.translate(
-          offset: translation,
-          child: Transform.rotate(
-            angle: rotationAngle,
-            child: Container(
-              height: circleElementWidth,
-              width: circleElementHeight,
-              color: Colors.black,
-              alignment: Alignment.center,
-              child: Text(
-                "$elementIndex",
-                style: TextStyle(
-                  inherit: false,
-                  fontSize: 12,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-      elements.add(container);
-    }
     return Column(
       children: [
         Container(
@@ -131,7 +88,7 @@ class _SpinnerState extends State<Spinner> {
           child: Stack(
             children: [
               _circles(circles),
-              _segmentView(elements),
+              _segmentView(),
               _scrollContainer(),
             ],
           ),
@@ -203,19 +160,19 @@ class _SpinnerState extends State<Spinner> {
     );
   }
 
-  Positioned _segmentView(List<Widget> elements) {
+  Positioned _segmentView() {
     return Positioned(
       top: 0,
       left: 0,
       right: 0,
       child: Transform.rotate(
         angle: _radians(_circleRotationAngle),
-        child: Container(
-          width: spinnerWidth,
-          height: spinnerWidth,
-          child: Stack(
-            children: elements,
-          ),
+        child: SpinnerView(
+          anchorRadius: anchorRadius,
+          spinnerWidth: spinnerWidth,
+          sectorHeight: circleElementHeight,
+          sectorWidth: circleElementWidth,
+          elementDescriptions: _elementDescriptions,
         ),
       ),
     );
@@ -389,8 +346,14 @@ class _SpinnerState extends State<Spinner> {
 
   int getElement(Offset offset) {
     double tappedDegree = pointToDegree(offset);
-    tappedDegree = (tappedDegree.abs() + _circleRotationAngle) % 360;
-    return tappedDegree ~/ theta;
+    double adjustedTappedDegree = (tappedDegree.abs() + _circleRotationAngle) % 360;
+    return adjustedTappedDegree ~/ theta;
+  }
+
+  double getEndRotationAngle(Offset offset) {
+    double tappedDegree = pointToDegree(offset);
+    double diff = -90 - tappedDegree;
+    return _circleRotationAngle + diff;
   }
 
   int shiftByElements(int actualIndex, int shiftBy) {
