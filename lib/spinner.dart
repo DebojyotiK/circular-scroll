@@ -21,7 +21,8 @@ class Spinner extends StatefulWidget {
   State<Spinner> createState() => _SpinnerState();
 }
 
-class _SpinnerState extends State<Spinner> {
+class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
+  late AnimationController controller;
   GlobalKey<_SpinnerState> scrollKey = GlobalKey<_SpinnerState>();
   late SpinnerBloc _bloc;
 
@@ -45,6 +46,10 @@ class _SpinnerState extends State<Spinner> {
       elementsPerHalf: widget.elementsPerHalf,
       innerRadius: 0.7 * widget.radius,
       radius: widget.radius,
+      animationController: AnimationController(
+        duration: const Duration(milliseconds: 500),
+        vsync: this,
+      ),
     );
     debugPrint("Initialized");
     debugPrint("Spinner Width: ${_bloc.spinnerWidth}");
@@ -60,7 +65,7 @@ class _SpinnerState extends State<Spinner> {
           height: _bloc.spinnerWidth,
           child: Stack(
             children: [
-              _segmentView(),
+              _spinnerView(),
               _scrollContainer(),
             ],
           ),
@@ -78,9 +83,9 @@ class _SpinnerState extends State<Spinner> {
           ),
         ),
         GestureDetector(
-          onTap: (){
-            setState(() {
-              _bloc.scrollToNearest();
+          onTap: () {
+            _bloc.scrollToNearest(() {
+              setState(() {});
             });
           },
           child: SizedBox(
@@ -142,6 +147,10 @@ class _SpinnerState extends State<Spinner> {
             } else if (_bloc.offset! >= (_bloc.spinnerWidth + _bloc.contentHeight)) {
               _bloc.controller.jumpTo(_bloc.spinnerWidth);
             }
+          } else if (scrollInfo is ScrollEndNotification) {
+            _bloc.scrollToNearest(() {
+              setState(() {});
+            });
           }
           return true;
         },
@@ -149,7 +158,7 @@ class _SpinnerState extends State<Spinner> {
     );
   }
 
-  Positioned _segmentView() {
+  Positioned _spinnerView() {
     return Positioned(
       top: 0,
       left: 0,

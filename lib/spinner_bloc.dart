@@ -21,11 +21,19 @@ class SpinnerBloc {
   double? offset;
   static int repeatContent = 5;
   final List<ElementDescription> elementDescriptions = [];
+  final AnimationController animationController;
+  bool _isAnimating = false;
+
+  bool get isAnimating => _isAnimating;
+  late Animation<double> _rotationAnimation;
+
+  Animation<double> get rotationAnimation => _rotationAnimation;
 
   SpinnerBloc({
     required this.radius,
     required int elementsPerHalf,
     required this.innerRadius,
+    required this.animationController,
   })  : spinnerWidth = 2 * radius,
         controller = ScrollController(initialScrollOffset: 2 * radius),
         numberOfItems = 2 * elementsPerHalf,
@@ -42,7 +50,28 @@ class SpinnerBloc {
     }
   }
 
-  void scrollToNearest(){
-    circleRotationAngle = (circleRotationAngle~/(theta/2)/2).ceil()*theta;
+  void scrollToNearest(VoidCallback onFrameUpdate) {
+    _isAnimating = true;
+    double newCircleRotationAngle = (circleRotationAngle ~/ (theta / 2) / 2).ceil() * theta;
+    double diff = (newCircleRotationAngle - circleRotationAngle).abs();
+    _rotationAnimation = Tween(begin: circleRotationAngle, end: newCircleRotationAngle).animate(
+      CurvedAnimation(
+        parent: animationController,
+        curve: Curves.bounceInOut,
+      ),
+    )
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+          circleRotationAngle = newCircleRotationAngle;
+        }
+        onFrameUpdate();
+      })
+      ..addListener(() {
+        circleRotationAngle = _rotationAnimation.value;
+        onFrameUpdate();
+      });
+    animationController.reset();
+    animationController.duration = Duration(milliseconds: (2000 * diff) ~/ 180);
+    animationController.forward();
   }
 }
