@@ -10,12 +10,14 @@ import 'typedefs.dart';
 class Spinner extends StatefulWidget {
   final int elementsPerHalf;
   final double radius;
+  final double innerRadius;
   final bool showDebugViews;
   final CircularElementBuilder elementBuilder;
 
   const Spinner({
     Key? key,
     required this.radius,
+    required this.innerRadius,
     required this.elementsPerHalf,
     required this.elementBuilder,
     this.showDebugViews = true,
@@ -44,7 +46,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
     super.initState();
     _bloc = SpinnerBloc(
       elementsPerHalf: widget.elementsPerHalf,
-      innerRadius: 0.7 * widget.radius,
+      innerRadius: widget.innerRadius,
       radius: widget.radius,
       animationController: AnimationController(
         vsync: this,

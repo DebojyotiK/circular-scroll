@@ -74,6 +74,7 @@ class HomePage extends StatelessWidget {
       alignment: Alignment.center,
       child: Spinner(
         radius: radius,
+        innerRadius: 0.5 * radius,
         elementsPerHalf: 7,
         showDebugViews: false,
         elementBuilder: (index) {

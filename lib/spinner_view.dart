@@ -68,7 +68,10 @@ class SpinnerView extends StatelessWidget {
       offset: Offset((sectorWidth - sectorHeight) / 2, 0),
       child: Transform.rotate(
         angle: MathUtils.radians(90),
-        child: _arcView(elementIndex),
+        child: Transform.scale(
+          child: _arcView(elementIndex),
+          scale: 0.95,
+        ),
       ),
     );
   }
