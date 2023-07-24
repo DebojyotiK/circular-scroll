@@ -75,15 +75,34 @@ class HomePage extends StatelessWidget {
       child: Spinner(
         radius: radius,
         elementsPerHalf: 7,
-        showDebugViews: false,
+        showDebugViews: true,
         elementBuilder: (index) {
           return Container(
-            color: Colors.blue,
-            child: Image.asset(
-              "assets/biryani.jpeg",
-              fit: BoxFit.cover,
-            ),
-          );
+              color: Colors.blue,
+              child: Stack(
+                children: [
+                  Positioned(
+                    child: Image.asset(
+                      "assets/biryani.jpeg",
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: Text(
+                        "$index",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          inherit: false,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ));
         },
       ),
     );

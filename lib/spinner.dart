@@ -70,7 +70,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
       children: [
         SizedBox(
           width: _bloc.spinnerWidth,
-          height: _bloc.spinnerWidth / 2,
+          height: _bloc.spinnerWidth,
           child: Stack(
             children: [
               if (widget.showDebugViews)
