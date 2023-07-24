@@ -59,7 +59,6 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
     return Column(
       children: [
         Container(
-          color: Colors.green,
           width: _bloc.spinnerWidth,
           height: _bloc.spinnerWidth,
           child: Stack(

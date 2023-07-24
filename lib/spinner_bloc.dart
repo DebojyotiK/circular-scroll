@@ -36,9 +36,28 @@ class SpinnerBloc {
 
   String visibleElementText = "";
 
+  List<ElementDescription> _lastVisibleElements = [];
+
   ElementDescription get centerItem {
     int index = _convertDegreeToNegativeDegree((-90 - circleRotationAngle)).abs() ~/ theta;
     return elementDescriptions[index];
+  }
+
+  void notifyVisibilityOfElements() {
+    List<ElementDescription> visibleElements = _getVisibleElements();
+    List<ElementDescription> newlyVisibleElements = [];
+    List<ElementDescription> newlyHiddenElements = [];
+    for (var element in visibleElements) {
+      if (!_lastVisibleElements.contains(element)) {
+        newlyVisibleElements.add(element);
+      }
+    }
+    for (var element in _lastVisibleElements) {
+      if (!visibleElements.contains(element)) {
+        newlyHiddenElements.add(element);
+      }
+    }
+    _lastVisibleElements = visibleElements;
   }
 
   List<ElementDescription> _getVisibleElements() {
@@ -50,9 +69,6 @@ class SpinnerBloc {
         visibleElements.add(element);
       }
     }
-    visibleElementText = "[${visibleElements.map((e) => e.description).join(",")}]";
-    debugPrint(visibleElementText);
-    onFrameUpdate();
     return visibleElements;
   }
 

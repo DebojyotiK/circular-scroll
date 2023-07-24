@@ -43,12 +43,13 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
+    double radius = width * 0.8 / 2;
     return Container(
       color: Colors.white,
       alignment: Alignment.topLeft,
       padding: EdgeInsets.only(top: 64),
       child: Spinner(
-        radius: width * 0.8 / 2,
+        radius: radius,
         elementsPerHalf: 3,
         showDebugViews: false,
       ),
