@@ -9,13 +9,13 @@ import 'math_utils.dart';
 class Spinner extends StatefulWidget {
   final int elementsPerHalf;
   final double radius;
-  final bool showDebugCircles;
+  final bool showDebugViews;
 
   const Spinner({
     Key? key,
     required this.radius,
     required this.elementsPerHalf,
-    this.showDebugCircles = true,
+    this.showDebugViews = true,
   }) : super(key: key);
 
   @override
@@ -64,7 +64,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
           height: _bloc.spinnerWidth,
           child: Stack(
             children: [
-              if (widget.showDebugCircles)
+              if (widget.showDebugViews)
                 DebugCircles(
                   anchorRadius: _bloc.anchorRadius,
                   spinnerWidth: _bloc.spinnerWidth,
@@ -130,6 +130,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
           bloc: _bloc,
           key: scrollKey,
           onTapUp: (details) => onTapUp(context, details),
+          showDebugViews: widget.showDebugViews,
         ),
         onNotification: (ScrollNotification scrollInfo) {
           if (scrollInfo is ScrollStartNotification) {

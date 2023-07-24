@@ -70,10 +70,11 @@ class SpinnerBloc {
         theta = 360 / (2 * elementsPerHalf) {
     _initialize();
     _initializeAnimation();
+    initializeScrollController();
   }
 
-  void initializeScrollController(){
-    controller = ScrollController(initialScrollOffset: spinnerWidth);
+  void initializeScrollController() {
+    controller = ScrollController(initialScrollOffset: spinnerWidth + contentHeight / 2);
   }
 
   void _initialize() {
@@ -104,8 +105,14 @@ class SpinnerBloc {
           double adjustedRotationAngle = -90 - centerItem.anchorAngle;
           double contentOffset = _degreesToDistance(adjustedRotationAngle) + spinnerWidth;
           debugPrint("Jump to $contentOffset");
-          controller.jumpTo(contentOffset);
           _previousOffset = contentOffset;
+          if (_previousOffset! <= spinnerWidth) {
+            _jumpToMiddle();
+          } else if (_previousOffset! >= (spinnerWidth + contentHeight)) {
+            _jumpToMiddle();
+          } else {
+            controller.jumpTo(_previousOffset!);
+          }
           _getVisibleElements();
           _isAnimating = false;
         }
@@ -208,18 +215,17 @@ class SpinnerBloc {
       }
       circleRotationAngle += rotationMultiplier * deltaDegree;
       onFrameUpdate();
-      if (_previousOffset! <= 0) {
-        _previousOffset = spinnerWidth;
-        Future.delayed(Duration(milliseconds: 10), () {
-          controller.jumpTo(spinnerWidth);
-        });
+      if (_previousOffset! <= spinnerWidth) {
+        _jumpToMiddle();
       } else if (_previousOffset! >= (spinnerWidth + contentHeight)) {
-        _previousOffset = spinnerWidth;
-        Future.delayed(Duration(milliseconds: 10), () {
-          controller.jumpTo(spinnerWidth);
-        });
+        _jumpToMiddle();
       }
     }
+  }
+
+  void _jumpToMiddle() {
+    _previousOffset = spinnerWidth + contentHeight / 2;
+    controller.jumpTo(_previousOffset!);
   }
 
   void processScrollEndNotification(ScrollEndNotification scrollInfo) {
@@ -229,9 +235,9 @@ class SpinnerBloc {
     }
   }
 
-  double _distanceToDegrees(double translation) => translation * 360 * SpinnerBloc.repeatContent / contentHeight;
+  double _distanceToDegrees(double translation) => translation * 360 * SpinnerBloc.repeatContent * 2 / contentHeight;
 
-  double _degreesToDistance(double degrees) => degrees * contentHeight / (360 * SpinnerBloc.repeatContent);
+  double _degreesToDistance(double degrees) => degrees * contentHeight / (360 * SpinnerBloc.repeatContent * 2);
 
   double _convertDegreeToNegativeDegree(double degree) {
     double adjustedDegree = degree % 360;

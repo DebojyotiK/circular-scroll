@@ -50,6 +50,7 @@ class HomePage extends StatelessWidget {
       child: Spinner(
         radius: width * 0.8 / 2,
         elementsPerHalf: 3,
+        showDebugViews: false,
       ),
     );
   }

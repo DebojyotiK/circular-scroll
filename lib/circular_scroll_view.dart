@@ -4,32 +4,42 @@ import 'package:spinner/spinner_bloc.dart';
 class CircularScrollView extends StatelessWidget {
   final GestureTapUpCallback? onTapUp;
   final SpinnerBloc bloc;
+  final bool showDebugViews;
 
   const CircularScrollView({
     Key? key,
     this.onTapUp,
+    required this.showDebugViews,
     required this.bloc,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    double height = (2 * bloc.spinnerWidth + bloc.contentHeight);
-    double viewHeight = 20;
-    double numberOfElements = height / viewHeight;
     List<Widget> views = [];
-    int i = 0;
-    for (i = 0; i < numberOfElements - 1; i++) {
+    if (showDebugViews) {
+      double height = (2 * bloc.spinnerWidth + bloc.contentHeight);
+      double viewHeight = 20;
+      double numberOfElements = height / viewHeight;
+      int i = 0;
+      for (i = 0; i < numberOfElements - 1; i++) {
+        views.add(
+          _scrollMiniView(viewHeight, i),
+        );
+      }
       views.add(
-        _scrollMiniView(viewHeight, i),
+        Expanded(
+          child: _scrollMiniView(viewHeight, i),
+        ),
+      );
+    } else {
+      views.add(
+        const Expanded(
+          child: SizedBox(),
+        ),
       );
     }
-    views.add(
-      Expanded(
-        child: _scrollMiniView(viewHeight, i),
-      ),
-    );
     return Opacity(
-      opacity: 0.5,
+      opacity: showDebugViews ? 0.5 : 0,
       child: SizedBox(
         height: bloc.spinnerWidth,
         child: GestureDetector(
@@ -37,8 +47,7 @@ class CircularScrollView extends StatelessWidget {
           child: SingleChildScrollView(
             controller: bloc.controller,
             physics: const ClampingScrollPhysics(),
-            child: Container(
-              color: Colors.blue,
+            child: SizedBox(
               height: (2 * bloc.spinnerWidth + bloc.contentHeight),
               child: Column(
                 children: views,
