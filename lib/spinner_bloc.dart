@@ -21,9 +21,7 @@ class SpinnerBloc {
   int page = 0;
   final double contentHeight;
   int rotationMultiplier = 1;
-  final double circleElementHeight;
   final double anchorRadius;
-  final double circleElementWidth = 20;
   double? _previousOffset;
   static int repeatContent = 5;
   final List<ElementDescription> elementDescriptions = [];
@@ -107,7 +105,6 @@ class SpinnerBloc {
         numberOfItems = 2 * elementsPerHalf,
         anchorRadius = innerRadius + (radius - innerRadius) / 2,
         contentHeight = 2 * pi * radius * 0.5 * repeatContent,
-        circleElementHeight = radius - innerRadius,
         theta = 360 / (2 * elementsPerHalf) {
     var cosThetaBy2 = cos(MathUtils.radians(theta / 2));
     var sinThetaBy2 = sin(MathUtils.radians(theta / 2));

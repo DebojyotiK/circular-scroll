@@ -1,10 +1,5 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:spinner/math_utils.dart';
 import 'package:spinner/spinner.dart';
-
-import 'arc_clipper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -81,6 +76,15 @@ class HomePage extends StatelessWidget {
         radius: radius,
         elementsPerHalf: 7,
         showDebugViews: false,
+        elementBuilder: (index) {
+          return Container(
+            color: Colors.blue,
+            child: Image.asset(
+              "assets/biryani.jpeg",
+              fit: BoxFit.cover,
+            ),
+          );
+        },
       ),
     );
   }

@@ -5,16 +5,19 @@ import 'package:spinner/spinner_view.dart';
 
 import 'debug_circles.dart';
 import 'math_utils.dart';
+import 'typedefs.dart';
 
 class Spinner extends StatefulWidget {
   final int elementsPerHalf;
   final double radius;
   final bool showDebugViews;
+  final CircularElementBuilder elementBuilder;
 
   const Spinner({
     Key? key,
     required this.radius,
     required this.elementsPerHalf,
+    required this.elementBuilder,
     this.showDebugViews = true,
   }) : super(key: key);
 
@@ -153,11 +156,15 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
       child: Transform.rotate(
         angle: MathUtils.radians(_bloc.circleRotationAngle),
         child: SpinnerView(
+          sectorTheta: _bloc.theta,
+          innerRadius: _bloc.innerRadius,
+          outerRadius: _bloc.radius,
           anchorRadius: _bloc.anchorRadius,
           spinnerWidth: _bloc.spinnerWidth,
-          sectorHeight: _bloc.circleElementHeight,
-          sectorWidth: _bloc.circleElementWidth,
+          sectorHeight: _bloc.segmentHeight,
+          sectorWidth: _bloc.segmentWidth,
           elementDescriptions: _bloc.elementDescriptions,
+          elementBuilder: widget.elementBuilder,
         ),
       ),
     );

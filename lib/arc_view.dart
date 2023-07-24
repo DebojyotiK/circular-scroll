@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:spinner/arc_clipper.dart';
 
+import 'typedefs.dart';
+
 class ArcView extends StatelessWidget {
   const ArcView({
     super.key,
@@ -9,6 +11,8 @@ class ArcView extends StatelessWidget {
     required this.innerRadius,
     required this.outerRadius,
     required this.theta,
+    required this.elementBuilder,
+    required this.index,
   });
 
   final double segmentWidth;
@@ -16,6 +20,8 @@ class ArcView extends StatelessWidget {
   final double innerRadius;
   final double outerRadius;
   final double theta;
+  final int index;
+  final CircularElementBuilder elementBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +34,7 @@ class ArcView extends StatelessWidget {
           outerRadius: outerRadius,
           arcTheta: theta,
         ),
-        child: Container(
-          color: Colors.blue,
-          child: Image.asset(
-            "assets/biryani.jpeg",
-            fit: BoxFit.cover,
-          ),
-        ),
+        child: elementBuilder(index),
       ),
     );
   }
