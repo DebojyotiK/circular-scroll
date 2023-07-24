@@ -64,38 +64,48 @@ class HomePage extends StatelessWidget {
         elementsPerHalf: 7,
         showDebugViews: false,
         elementBuilder: (index) {
-          return Container(
-              color: Colors.blue,
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: Image.asset(
-                      "assets/$index.jpeg",
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: Text(
-                        "$index",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          inherit: false,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ));
+          return _view(index);
+        },
+        onEnteredViewPort: (index) {
+          debugPrint("$index entered view port");
+        },
+        onLeftViewPort: (index) {
+          debugPrint("$index left view port");
         },
       ),
     );
+  }
+
+  Widget _view(int index) {
+    return Container(
+        color: Colors.blue,
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Image.asset(
+                "assets/$index.jpeg",
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned(
+              child: Container(
+                alignment: Alignment.center,
+                child: Text(
+                  "$index",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    inherit: false,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            )
+          ],
+        ));
   }
 }

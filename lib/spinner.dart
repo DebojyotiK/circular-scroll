@@ -12,14 +12,18 @@ class Spinner extends StatefulWidget {
   final double radius;
   final double innerRadius;
   final bool showDebugViews;
+  final OnEnteredViewPort? onEnteredViewPort;
+  final OnLeftViewPort? onLeftViewPort;
   final CircularElementBuilder elementBuilder;
 
-  const Spinner({
+  Spinner({
     Key? key,
     required this.radius,
     required this.innerRadius,
     required this.elementsPerHalf,
     required this.elementBuilder,
+    this.onEnteredViewPort,
+    this.onLeftViewPort,
     this.showDebugViews = true,
   }) : super(key: key);
 
@@ -54,15 +58,9 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
       onFrameUpdate: () {
         setState(() {});
       },
-      onEnteredViewPort: (index) {
-        debugPrint("$index entered view port");
-      },
-      onLeftViewPort: (index) {
-        debugPrint("$index left view port");
-      },
+      onEnteredViewPort: widget.onEnteredViewPort,
+      onLeftViewPort: widget.onLeftViewPort,
     );
-    debugPrint("Initialized");
-    debugPrint("Spinner Width: ${_bloc.spinnerWidth}");
   }
 
   @override
