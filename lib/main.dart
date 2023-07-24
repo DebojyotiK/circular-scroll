@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
 class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
 
-  double theta = 360 / 4;
+  double theta = 360 / 14;
   late double outerRadius;
   late double innerRadius;
   late double cosThetaBy2;
@@ -69,15 +69,22 @@ class HomePage extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       color: Colors.white,
-      child: CustomPaint(
-        size: Size(
-          segmentWidth,
-          segmentHeight,
-        ),
-        painter: ArcPainter(
-          innerRadius: innerRadius,
-          outerRadius: outerRadius,
-          arcTheta: theta,
+      child: Container(
+        width: segmentWidth,
+        height: segmentHeight,
+        child: ClipPath(
+          clipper: ArcClipper(
+            innerRadius: innerRadius,
+            outerRadius: outerRadius,
+            arcTheta: theta,
+          ),
+          child: Container(
+            color: Colors.blue,
+            child: Image.asset(
+              "assets/biryani.jpeg",
+              fit: BoxFit.cover,
+            ),
+          ),
         ),
       ),
     );
