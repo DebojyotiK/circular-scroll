@@ -2,11 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:spinner/arc_view.dart';
-import 'package:spinner/element_description.dart';
 import 'package:spinner/spinner_bloc.dart';
 
 import 'math_utils.dart';
 import 'typedefs.dart';
+
+double initialScale = 0.9;
+double finalScale = 1;
 
 class SpinnerView extends StatelessWidget {
   final CircularElementBuilder elementBuilder;
@@ -54,9 +56,14 @@ class SpinnerView extends StatelessWidget {
       offset: Offset((bloc.segmentWidth - bloc.segmentHeight) / 2, 0),
       child: Transform.rotate(
         angle: MathUtils.radians(90),
-        child: Transform.scale(
-          child: _arcView(elementIndex),
-          scale: 0.95,
+        child: ValueListenableBuilder<double>(
+          valueListenable: bloc.circleRotationAngleNotifier,
+          builder: (context, value, child) {
+            return Transform.scale(
+              scale: _getScale(elementIndex),
+              child: _arcView(elementIndex),
+            );
+          },
         ),
       ),
     );
@@ -72,5 +79,19 @@ class SpinnerView extends StatelessWidget {
       elementBuilder: elementBuilder,
       index: elementIndex,
     );
+  }
+
+  double _getScale(int index) {
+    double currentAnchorAngle = bloc.elementDescriptions[index].anchorAngle + bloc.circleRotationAngleNotifier.value;
+    double adjustedAnchorAngle = MathUtils.convertDegreeToNegativeDegree(currentAnchorAngle).abs();
+    if (adjustedAnchorAngle > 0 && adjustedAnchorAngle <= 180) {
+      if (adjustedAnchorAngle > 90 && adjustedAnchorAngle <= 180) {
+        adjustedAnchorAngle = 180 - adjustedAnchorAngle;
+      }
+      double scale = ((finalScale - initialScale) * adjustedAnchorAngle) / 90 + initialScale;
+      return scale;
+    } else {
+      return 1.0;
+    }
   }
 }
