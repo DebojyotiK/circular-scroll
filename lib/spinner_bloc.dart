@@ -5,6 +5,9 @@ import 'package:spinner/element_description.dart';
 
 import 'math_utils.dart';
 
+typedef OnEnteredViewPort = void Function(List<int> index);
+typedef OnLeftViewPort = void Function(List<int> index);
+
 class SpinnerBloc {
   final double spinnerWidth;
   final double radius;
@@ -13,6 +16,7 @@ class SpinnerBloc {
   final int numberOfItems;
   late ScrollController controller;
   double circleRotationAngle = 0;
+  double? _visibleElementsCalculationLastAngle;
   double _newCircleRotationAngle = 0;
   int page = 0;
   final double contentHeight;
@@ -38,26 +42,38 @@ class SpinnerBloc {
 
   List<ElementDescription> _lastVisibleElements = [];
 
+  OnEnteredViewPort? onEnteredViewPort;
+  OnLeftViewPort? onLeftViewPort;
+
   ElementDescription get centerItem {
     int index = _convertDegreeToNegativeDegree((-90 - circleRotationAngle)).abs() ~/ theta;
     return elementDescriptions[index];
   }
 
   void notifyVisibilityOfElements() {
-    List<ElementDescription> visibleElements = _getVisibleElements();
-    List<ElementDescription> newlyVisibleElements = [];
-    List<ElementDescription> newlyHiddenElements = [];
-    for (var element in visibleElements) {
-      if (!_lastVisibleElements.contains(element)) {
-        newlyVisibleElements.add(element);
+    if (_visibleElementsCalculationLastAngle == null || (circleRotationAngle - _visibleElementsCalculationLastAngle!).abs() > 0.2 * theta) {
+      _visibleElementsCalculationLastAngle = circleRotationAngle;
+      List<ElementDescription> visibleElements = _getVisibleElements();
+      List<int> newlyVisibleElement = [];
+      List<int> newlyHiddenElement = [];
+      for (var element in visibleElements) {
+        if (!_lastVisibleElements.contains(element)) {
+          newlyVisibleElement.add(elementDescriptions.indexOf(element));
+        }
       }
-    }
-    for (var element in _lastVisibleElements) {
-      if (!visibleElements.contains(element)) {
-        newlyHiddenElements.add(element);
+      for (var element in _lastVisibleElements) {
+        if (!visibleElements.contains(element)) {
+          newlyHiddenElement.add(elementDescriptions.indexOf(element));
+        }
       }
+      if (onEnteredViewPort != null && newlyVisibleElement.isNotEmpty) {
+        onEnteredViewPort!(newlyVisibleElement);
+      }
+      if (onLeftViewPort != null && newlyHiddenElement.isNotEmpty) {
+        onLeftViewPort!(newlyHiddenElement);
+      }
+      _lastVisibleElements = visibleElements;
     }
-    _lastVisibleElements = visibleElements;
   }
 
   List<ElementDescription> _getVisibleElements() {
@@ -78,6 +94,8 @@ class SpinnerBloc {
     required this.innerRadius,
     required this.animationController,
     required this.onFrameUpdate,
+    this.onEnteredViewPort,
+    this.onLeftViewPort,
   })  : spinnerWidth = 2 * radius,
         numberOfItems = 2 * elementsPerHalf,
         anchorRadius = innerRadius + (radius - innerRadius) / 2,
@@ -102,7 +120,7 @@ class SpinnerBloc {
       );
       elementDescriptions.add(element);
     }
-    _getVisibleElements();
+    notifyVisibilityOfElements();
   }
 
   void _initializeAnimation() {
@@ -129,7 +147,7 @@ class SpinnerBloc {
           } else {
             controller.jumpTo(_previousOffset!);
           }
-          _getVisibleElements();
+          notifyVisibilityOfElements();
           _isAnimating = false;
         }
         onFrameUpdate();
@@ -230,6 +248,7 @@ class SpinnerBloc {
         rotationMultiplier = (x > 0) ? -1 : 1;
       }
       circleRotationAngle += rotationMultiplier * deltaDegree;
+      notifyVisibilityOfElements();
       onFrameUpdate();
       if (_previousOffset! <= spinnerWidth) {
         _jumpToMiddle();

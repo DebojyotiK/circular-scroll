@@ -49,6 +49,12 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
       onFrameUpdate: () {
         setState(() {});
       },
+      onEnteredViewPort: (index) {
+        debugPrint("$index entered view port");
+      },
+      onLeftViewPort: (index) {
+        debugPrint("$index left view port");
+      },
     );
     debugPrint("Initialized");
     debugPrint("Spinner Width: ${_bloc.spinnerWidth}");
