@@ -69,20 +69,23 @@ class HomePage extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       color: Colors.white,
-      child: Container(
-        width: segmentWidth,
-        height: segmentHeight,
-        child: ClipPath(
-          clipper: ArcClipper(
-            innerRadius: innerRadius,
-            outerRadius: outerRadius,
-            arcTheta: theta,
-          ),
-          child: Container(
-            color: Colors.blue,
-            child: Image.asset(
-              "assets/biryani.jpeg",
-              fit: BoxFit.cover,
+      child: Transform.rotate(
+        angle: MathUtils.radians(90),
+        child: Container(
+          width: segmentWidth,
+          height: segmentHeight,
+          child: ClipPath(
+            clipper: ArcClipper(
+              innerRadius: innerRadius,
+              outerRadius: outerRadius,
+              arcTheta: theta,
+            ),
+            child: Container(
+              color: Colors.blue,
+              child: Image.asset(
+                "assets/biryani.jpeg",
+                fit: BoxFit.cover,
+              ),
             ),
           ),
         ),
