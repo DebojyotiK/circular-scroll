@@ -87,7 +87,7 @@ class HomePage extends StatelessWidget {
                     right: 0,
                     bottom: 0,
                     child: Image.asset(
-                      "assets/biryani.jpeg",
+                      "assets/$index.jpeg",
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -96,7 +96,7 @@ class HomePage extends StatelessWidget {
                       alignment: Alignment.center,
                       child: Text(
                         "$index",
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
                           inherit: false,
