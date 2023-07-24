@@ -21,7 +21,33 @@ class DebugCircles extends StatelessWidget {
         _anchorCircle(),
         _outerCircle(),
         _innerCircle(),
+        _xAxis(),
+        _yAxis(),
       ],
+    );
+  }
+
+  Widget _xAxis() {
+    return Positioned(
+      left: 0,
+      top: spinnerWidth / 2 - 1,
+      child: Container(
+        width: spinnerWidth,
+        height: 2,
+        color: Colors.black,
+      ),
+    );
+  }
+
+  Widget _yAxis() {
+    return Positioned(
+      left: spinnerWidth / 2 - 1,
+      top: 0,
+      child: Container(
+        width: 2,
+        height: spinnerWidth,
+        color: Colors.black,
+      ),
     );
   }
 

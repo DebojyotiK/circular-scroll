@@ -11,7 +11,7 @@ class SpinnerBloc {
   final double innerRadius;
   final double theta;
   final int numberOfItems;
-  final ScrollController controller;
+  late ScrollController controller;
   double circleRotationAngle = 0;
   double _newCircleRotationAngle = 0;
   int page = 0;
@@ -34,9 +34,26 @@ class SpinnerBloc {
 
   final VoidCallback onFrameUpdate;
 
+  String visibleElementText = "";
+
   ElementDescription get centerItem {
     int index = _convertDegreeToNegativeDegree((-90 - circleRotationAngle)).abs() ~/ theta;
     return elementDescriptions[index];
+  }
+
+  List<ElementDescription> _getVisibleElements() {
+    List<ElementDescription> visibleElements = [];
+    for (var element in elementDescriptions) {
+      double adjustedStartAngle = _convertDegreeToNegativeDegree(element.startAngle + circleRotationAngle).abs();
+      double adjustedEndAngle = _convertDegreeToNegativeDegree(element.endAngle + circleRotationAngle).abs();
+      if ((adjustedStartAngle > 0 && adjustedStartAngle < 180) || (adjustedEndAngle > 0 && adjustedEndAngle < 180)) {
+        visibleElements.add(element);
+      }
+    }
+    visibleElementText = "[${visibleElements.map((e) => e.description).join(",")}]";
+    debugPrint(visibleElementText);
+    onFrameUpdate();
+    return visibleElements;
   }
 
   SpinnerBloc({
@@ -46,7 +63,6 @@ class SpinnerBloc {
     required this.animationController,
     required this.onFrameUpdate,
   })  : spinnerWidth = 2 * radius,
-        controller = ScrollController(initialScrollOffset: 2 * radius),
         numberOfItems = 2 * elementsPerHalf,
         anchorRadius = innerRadius + (radius - innerRadius) / 2,
         contentHeight = 2 * pi * radius * 0.5 * repeatContent,
@@ -54,6 +70,10 @@ class SpinnerBloc {
         theta = 360 / (2 * elementsPerHalf) {
     _initialize();
     _initializeAnimation();
+  }
+
+  void initializeScrollController(){
+    controller = ScrollController(initialScrollOffset: spinnerWidth);
   }
 
   void _initialize() {
@@ -65,6 +85,7 @@ class SpinnerBloc {
       );
       elementDescriptions.add(element);
     }
+    _getVisibleElements();
   }
 
   void _initializeAnimation() {
@@ -85,6 +106,7 @@ class SpinnerBloc {
           debugPrint("Jump to $contentOffset");
           controller.jumpTo(contentOffset);
           _previousOffset = contentOffset;
+          _getVisibleElements();
           _isAnimating = false;
         }
         onFrameUpdate();
@@ -187,9 +209,15 @@ class SpinnerBloc {
       circleRotationAngle += rotationMultiplier * deltaDegree;
       onFrameUpdate();
       if (_previousOffset! <= 0) {
-        controller.jumpTo(spinnerWidth);
+        _previousOffset = spinnerWidth;
+        Future.delayed(Duration(milliseconds: 10), () {
+          controller.jumpTo(spinnerWidth);
+        });
       } else if (_previousOffset! >= (spinnerWidth + contentHeight)) {
-        controller.jumpTo(spinnerWidth);
+        _previousOffset = spinnerWidth;
+        Future.delayed(Duration(milliseconds: 10), () {
+          controller.jumpTo(spinnerWidth);
+        });
       }
     }
   }

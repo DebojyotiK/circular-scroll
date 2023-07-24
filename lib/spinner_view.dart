@@ -12,7 +12,6 @@ class SpinnerView extends StatelessWidget {
   final double sectorHeight;
   final double sectorWidth;
   final List<ElementDescription> elementDescriptions;
-  final bool showDebugCircles;
 
   const SpinnerView({
     Key? key,
@@ -21,20 +20,11 @@ class SpinnerView extends StatelessWidget {
     required this.anchorRadius,
     required this.sectorHeight,
     required this.sectorWidth,
-    this.showDebugCircles = true,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     List<Widget> elements = [];
-    if (showDebugCircles) {
-      elements.add(
-        DebugCircles(
-          anchorRadius: anchorRadius,
-          spinnerWidth: spinnerWidth,
-        ),
-      );
-    }
     for (var elementDescription in elementDescriptions) {
       int elementIndex = (elementDescriptions.indexOf(elementDescription));
       double x = anchorRadius * (cos(MathUtils.radians(elementDescription.anchorAngle.abs())));

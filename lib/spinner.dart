@@ -3,16 +3,19 @@ import 'package:spinner/circular_scroll_view.dart';
 import 'package:spinner/spinner_bloc.dart';
 import 'package:spinner/spinner_view.dart';
 
+import 'debug_circles.dart';
 import 'math_utils.dart';
 
 class Spinner extends StatefulWidget {
   final int elementsPerHalf;
   final double radius;
+  final bool showDebugCircles;
 
   const Spinner({
     Key? key,
     required this.radius,
     required this.elementsPerHalf,
+    this.showDebugCircles = true,
   }) : super(key: key);
 
   @override
@@ -61,6 +64,11 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
           height: _bloc.spinnerWidth,
           child: Stack(
             children: [
+              if (widget.showDebugCircles)
+                DebugCircles(
+                  anchorRadius: _bloc.anchorRadius,
+                  spinnerWidth: _bloc.spinnerWidth,
+                ),
               _spinnerView(),
               _scrollContainer(),
             ],
@@ -95,7 +103,19 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
               textAlign: TextAlign.center,
             ),
           ),
-        )
+        ),
+        SizedBox(
+          width: _bloc.spinnerWidth,
+          child: Text(
+            _bloc.visibleElementText,
+            style: const TextStyle(
+              inherit: false,
+              color: Colors.black,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
       ],
     );
   }
@@ -138,7 +158,6 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
           sectorHeight: _bloc.circleElementHeight,
           sectorWidth: _bloc.circleElementWidth,
           elementDescriptions: _bloc.elementDescriptions,
-          showDebugCircles: false,
         ),
       ),
     );
