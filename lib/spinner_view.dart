@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:spinner/arc_view.dart';
 import 'package:spinner/spinner_bloc.dart';
@@ -7,7 +5,7 @@ import 'package:spinner/spinner_bloc.dart';
 import 'math_utils.dart';
 import 'typedefs.dart';
 
-double initialScale = 0.9;
+double initialScale = 0.65;
 double finalScale = 1;
 
 class SpinnerView extends StatelessWidget {
@@ -25,20 +23,20 @@ class SpinnerView extends StatelessWidget {
     List<Widget> elements = [];
     for (var elementDescription in bloc.elementDescriptions) {
       int elementIndex = (bloc.elementDescriptions.indexOf(elementDescription));
-      double x = bloc.anchorRadius * (cos(MathUtils.radians(elementDescription.anchorAngle.abs())));
-      double y = bloc.anchorRadius * (sin(MathUtils.radians(elementDescription.anchorAngle.abs())));
-      double dx = x - bloc.anchorRadius;
-      double dy = -1 * y;
       double rotationAngle = MathUtils.radians(elementDescription.anchorAngle);
-      Offset translation = Offset(dx, dy);
-      Widget container = Transform.rotate(
-        angle: rotationAngle,
-        child: Container(
-          width: bloc.spinnerWidth,
-          height: bloc.spinnerWidth,
-          alignment: Alignment.centerRight,
-          child: _child(elementIndex),
-        ),
+      Widget container = ValueListenableBuilder<double>(
+        valueListenable: bloc.circleRotationAngleNotifier,
+        builder: (context, value, child) {
+          return Transform.rotate(
+            angle: rotationAngle,
+            child: Container(
+              width: bloc.spinnerWidth,
+              height: bloc.spinnerWidth,
+              alignment: Alignment.centerRight,
+              child: _child(elementIndex),
+            ),
+          );
+        },
       );
       elements.add(container);
     }
@@ -56,14 +54,12 @@ class SpinnerView extends StatelessWidget {
       offset: Offset((bloc.segmentWidth - bloc.segmentHeight) / 2, 0),
       child: Transform.rotate(
         angle: MathUtils.radians(90),
-        child: ValueListenableBuilder<double>(
-          valueListenable: bloc.circleRotationAngleNotifier,
-          builder: (context, value, child) {
-            return Transform.scale(
-              scale: _getScale(elementIndex),
-              child: _arcView(elementIndex),
-            );
-          },
+        child: Transform.scale(
+          scale: _getScale(elementIndex),
+          child: Transform.scale(
+            scale: 0.95,
+            child: _arcView(elementIndex),
+          ),
         ),
       ),
     );
@@ -82,16 +78,21 @@ class SpinnerView extends StatelessWidget {
   }
 
   double _getScale(int index) {
+    double adjustedAnchorAngle = _getAdjustedAnchorAngle(index);
+    double scale = ((finalScale - initialScale) * adjustedAnchorAngle) / 90 + initialScale;
+    return scale;
+  }
+
+  double _getAdjustedAnchorAngle(int index) {
     double currentAnchorAngle = bloc.elementDescriptions[index].anchorAngle + bloc.circleRotationAngleNotifier.value;
     double adjustedAnchorAngle = MathUtils.convertDegreeToNegativeDegree(currentAnchorAngle).abs();
-    if (adjustedAnchorAngle > 0 && adjustedAnchorAngle <= 180) {
-      if (adjustedAnchorAngle > 90 && adjustedAnchorAngle <= 180) {
-        adjustedAnchorAngle = 180 - adjustedAnchorAngle;
-      }
-      double scale = ((finalScale - initialScale) * adjustedAnchorAngle) / 90 + initialScale;
-      return scale;
-    } else {
-      return 1.0;
+    if (adjustedAnchorAngle > 90 && adjustedAnchorAngle <= 180) {
+      adjustedAnchorAngle = 180 - adjustedAnchorAngle;
+    } else if (adjustedAnchorAngle > 180 && adjustedAnchorAngle <= 270) {
+      adjustedAnchorAngle = adjustedAnchorAngle % 180;
+    } else if (adjustedAnchorAngle > 270 && adjustedAnchorAngle < 360) {
+      adjustedAnchorAngle = 360 - adjustedAnchorAngle;
     }
+    return adjustedAnchorAngle;
   }
 }
