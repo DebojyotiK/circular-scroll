@@ -42,20 +42,18 @@ class SpinnerView extends StatelessWidget {
       double dy = -1 * y;
       double rotationAngle = MathUtils.radians(elementDescription.anchorAngle);
       Offset translation = Offset(dx, dy);
-      Widget container = Positioned(
-        top: (spinnerWidth - sectorWidth) / 2,
-        right: 0,
-        child: Transform.translate(
-          offset: translation,
-          child: Transform.rotate(
-            angle: rotationAngle,
-            child: _child(elementIndex),
-          ),
+      Widget container = Transform.rotate(
+        angle: rotationAngle,
+        child: Container(
+          width: spinnerWidth,
+          height: spinnerWidth,
+          alignment: Alignment.centerRight,
+          child: _child(elementIndex),
         ),
       );
       elements.add(container);
     }
-    return Container(
+    return SizedBox(
       width: spinnerWidth,
       height: spinnerWidth,
       child: Stack(
@@ -65,17 +63,25 @@ class SpinnerView extends StatelessWidget {
   }
 
   Widget _child(int elementIndex) {
-    return Transform.rotate(
-      angle: MathUtils.radians(90),
-      child: ArcView(
-        segmentWidth: sectorWidth,
-        segmentHeight: sectorHeight,
-        innerRadius: innerRadius,
-        outerRadius: outerRadius,
-        theta: sectorTheta,
-        elementBuilder: elementBuilder,
-        index: elementIndex,
+    var sinThetaBy2 = sin(MathUtils.radians(sectorTheta / 2));
+    return Transform.translate(
+      offset: Offset((sectorWidth - sectorHeight) / 2, 0),
+      child: Transform.rotate(
+        angle: MathUtils.radians(90),
+        child: _arcView(elementIndex),
       ),
+    );
+  }
+
+  Widget _arcView(int elementIndex) {
+    return ArcView(
+      segmentWidth: sectorWidth,
+      segmentHeight: sectorHeight,
+      innerRadius: innerRadius,
+      outerRadius: outerRadius,
+      theta: sectorTheta,
+      elementBuilder: elementBuilder,
+      index: elementIndex,
     );
   }
 }

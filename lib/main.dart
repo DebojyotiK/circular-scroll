@@ -75,13 +75,17 @@ class HomePage extends StatelessWidget {
       child: Spinner(
         radius: radius,
         elementsPerHalf: 7,
-        showDebugViews: true,
+        showDebugViews: false,
         elementBuilder: (index) {
           return Container(
               color: Colors.blue,
               child: Stack(
                 children: [
                   Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
                     child: Image.asset(
                       "assets/biryani.jpeg",
                       fit: BoxFit.cover,
