@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:spinner/math_utils.dart';
 import 'package:spinner/spinner.dart';
 
-import 'arc_painter.dart';
+import 'arc_clipper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -47,11 +47,6 @@ class HomePage extends StatelessWidget {
 
   double theta = 360 / 14;
   late double outerRadius;
-  late double innerRadius;
-  late double cosThetaBy2;
-  late double sinThetaBy2;
-  late double segmentHeight;
-  late double segmentWidth;
   bool isInitialized = false;
 
   @override
@@ -59,38 +54,22 @@ class HomePage extends StatelessWidget {
     if (!isInitialized) {
       double width = MediaQuery.of(context).size.width;
       outerRadius = width * 0.8 / 2;
-      innerRadius = outerRadius * 0.7;
-      cosThetaBy2 = cos(MathUtils.radians(theta / 2));
-      sinThetaBy2 = sin(MathUtils.radians(theta / 2));
-      segmentHeight = outerRadius - innerRadius * cosThetaBy2;
-      segmentWidth = 2 * outerRadius * sinThetaBy2;
       isInitialized = true;
     }
-    return Container(
-      alignment: Alignment.center,
-      color: Colors.white,
-      child: Transform.rotate(
-        angle: MathUtils.radians(90),
-        child: Container(
-          width: segmentWidth,
-          height: segmentHeight,
-          child: ClipPath(
-            clipper: ArcClipper(
-              innerRadius: innerRadius,
-              outerRadius: outerRadius,
-              arcTheta: theta,
-            ),
-            child: Container(
-              color: Colors.blue,
-              child: Image.asset(
-                "assets/biryani.jpeg",
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+    // return Container(
+    //   alignment: Alignment.center,
+    //   color: Colors.white,
+    //   child: Transform.rotate(
+    //     angle: MathUtils.radians(90),
+    //     child: ArcView(
+    //       segmentWidth: segmentWidth,
+    //       segmentHeight: segmentHeight,
+    //       innerRadius: innerRadius,
+    //       outerRadius: outerRadius,
+    //       theta: theta,
+    //     ),
+    //   ),
+    // );
     return _spinner(outerRadius);
   }
 

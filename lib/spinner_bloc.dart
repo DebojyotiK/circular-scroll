@@ -42,6 +42,13 @@ class SpinnerBloc {
 
   List<ElementDescription> _lastVisibleElements = [];
 
+  late double _segmentHeight;
+  late double _segmentWidth;
+
+  double get segmentHeight => _segmentHeight;
+
+  double get segmentWidth => _segmentWidth;
+
   OnEnteredViewPort? onEnteredViewPort;
   OnLeftViewPort? onLeftViewPort;
 
@@ -102,6 +109,10 @@ class SpinnerBloc {
         contentHeight = 2 * pi * radius * 0.5 * repeatContent,
         circleElementHeight = radius - innerRadius,
         theta = 360 / (2 * elementsPerHalf) {
+    var cosThetaBy2 = cos(MathUtils.radians(theta / 2));
+    var sinThetaBy2 = sin(MathUtils.radians(theta / 2));
+    _segmentHeight = radius - innerRadius * cosThetaBy2;
+    _segmentWidth = 2 * radius * sinThetaBy2;
     _initialize();
     _initializeAnimation();
     initializeScrollController();
