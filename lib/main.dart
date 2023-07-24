@@ -1,5 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:spinner/math_utils.dart';
 import 'package:spinner/spinner.dart';
+
+import 'arc_painter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,18 +37,54 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: HomePage(),
     );
   }
 }
 
 class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+  HomePage({Key? key}) : super(key: key);
+
+  double theta = 360 / 4;
+  late double outerRadius;
+  late double innerRadius;
+  late double cosThetaBy2;
+  late double sinThetaBy2;
+  late double segmentHeight;
+  late double segmentWidth;
+  bool isInitialized = false;
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    double radius = width * 0.8 / 2;
+    if (!isInitialized) {
+      double width = MediaQuery.of(context).size.width;
+      outerRadius = width * 0.8 / 2;
+      innerRadius = outerRadius * 0.7;
+      cosThetaBy2 = cos(MathUtils.radians(theta / 2));
+      sinThetaBy2 = sin(MathUtils.radians(theta / 2));
+      segmentHeight = outerRadius - innerRadius * cosThetaBy2;
+      segmentWidth = 2 * outerRadius * sinThetaBy2;
+      isInitialized = true;
+    }
+    return Container(
+      alignment: Alignment.center,
+      color: Colors.white,
+      child: CustomPaint(
+        size: Size(
+          segmentWidth,
+          segmentHeight,
+        ),
+        painter: ArcPainter(
+          innerRadius: innerRadius,
+          outerRadius: outerRadius,
+          arcTheta: theta,
+        ),
+      ),
+    );
+    return _spinner(outerRadius);
+  }
+
+  Container _spinner(double radius) {
     return Container(
       color: Colors.white,
       alignment: Alignment.center,
