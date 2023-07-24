@@ -8,4 +8,9 @@ class MathUtils {
   static double degrees(double radians) {
     return radians * 180 / pi;
   }
+
+  static double convertDegreeToNegativeDegree(double degree) {
+    double adjustedDegree = degree % 360;
+    return adjustedDegree - 360;
+  }
 }

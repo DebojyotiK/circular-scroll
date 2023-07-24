@@ -15,7 +15,7 @@ class SpinnerBloc {
   final double theta;
   final int numberOfItems;
   late ScrollController controller;
-  double circleRotationAngle = 0;
+  ValueNotifier<double> circleRotationAngleNotifier = ValueNotifier<double>(0);
   double? _visibleElementsCalculationLastAngle;
   double _newCircleRotationAngle = 0;
   int page = 0;
@@ -51,13 +51,14 @@ class SpinnerBloc {
   OnLeftViewPort? onLeftViewPort;
 
   ElementDescription get centerItem {
-    int index = _convertDegreeToNegativeDegree((-90 - circleRotationAngle)).abs() ~/ theta;
+    int index = MathUtils.convertDegreeToNegativeDegree((-90 - circleRotationAngleNotifier.value)).abs() ~/ theta;
     return elementDescriptions[index];
   }
 
   void notifyVisibilityOfElements() {
-    if (_visibleElementsCalculationLastAngle == null || (circleRotationAngle - _visibleElementsCalculationLastAngle!).abs() > 0.2 * theta) {
-      _visibleElementsCalculationLastAngle = circleRotationAngle;
+    if (_visibleElementsCalculationLastAngle == null ||
+        (circleRotationAngleNotifier.value - _visibleElementsCalculationLastAngle!).abs() > 0.2 * theta) {
+      _visibleElementsCalculationLastAngle = circleRotationAngleNotifier.value;
       List<ElementDescription> visibleElements = _getVisibleElements();
       List<int> newlyVisibleElement = [];
       List<int> newlyHiddenElement = [];
@@ -84,8 +85,8 @@ class SpinnerBloc {
   List<ElementDescription> _getVisibleElements() {
     List<ElementDescription> visibleElements = [];
     for (var element in elementDescriptions) {
-      double adjustedStartAngle = _convertDegreeToNegativeDegree(element.startAngle + circleRotationAngle).abs();
-      double adjustedEndAngle = _convertDegreeToNegativeDegree(element.endAngle + circleRotationAngle).abs();
+      double adjustedStartAngle = MathUtils.convertDegreeToNegativeDegree(element.startAngle + circleRotationAngleNotifier.value).abs();
+      double adjustedEndAngle = MathUtils.convertDegreeToNegativeDegree(element.endAngle + circleRotationAngleNotifier.value).abs();
       if ((adjustedStartAngle > 0 && adjustedStartAngle < 180) || (adjustedEndAngle > 0 && adjustedEndAngle < 180)) {
         visibleElements.add(element);
       }
@@ -143,7 +144,7 @@ class SpinnerBloc {
     )
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          circleRotationAngle = _newCircleRotationAngle;
+          circleRotationAngleNotifier.value = _newCircleRotationAngle;
           double adjustedRotationAngle = -90 - centerItem.anchorAngle;
           double contentOffset = _degreesToDistance(adjustedRotationAngle) + spinnerWidth;
           debugPrint("Jump to $contentOffset");
@@ -161,20 +162,21 @@ class SpinnerBloc {
         onFrameUpdate();
       })
       ..addListener(() {
-        circleRotationAngle = circleRotationAngle + _rotationAnimation.value * (_newCircleRotationAngle - circleRotationAngle);
+        circleRotationAngleNotifier.value =
+            circleRotationAngleNotifier.value + _rotationAnimation.value * (_newCircleRotationAngle - circleRotationAngleNotifier.value);
         onFrameUpdate();
       });
   }
 
   void scrollToNearest() {
-    double newCircleNearestRotationAngle = (circleRotationAngle ~/ (theta / 2) / 2).ceil() * theta;
+    double newCircleNearestRotationAngle = (circleRotationAngleNotifier.value ~/ (theta / 2) / 2).ceil() * theta;
     _rotateToAngle(newCircleNearestRotationAngle);
   }
 
   void bringTappedElementToCenter(Offset offset) {
-    double tappedDegree = (elementDescriptions[getElementIndex(offset)].anchorAngle + circleRotationAngle) % 360;
+    double tappedDegree = (elementDescriptions[getElementIndex(offset)].anchorAngle + circleRotationAngleNotifier.value) % 360;
     double adjustedDegree = _getAdjustedDegree(tappedDegree);
-    double endAngle = circleRotationAngle + adjustedDegree;
+    double endAngle = circleRotationAngleNotifier.value + adjustedDegree;
     _rotateToAngle(endAngle);
   }
 
@@ -191,10 +193,10 @@ class SpinnerBloc {
   }
 
   void _rotateToAngle(double newCircleRotationAngle) {
-    if (newCircleRotationAngle != circleRotationAngle) {
+    if (newCircleRotationAngle != circleRotationAngleNotifier) {
       _isAnimating = true;
       _newCircleRotationAngle = newCircleRotationAngle;
-      double diff = (_newCircleRotationAngle - circleRotationAngle).abs();
+      double diff = (_newCircleRotationAngle - circleRotationAngleNotifier.value).abs();
       animationController.reset();
       animationController.duration = Duration(milliseconds: (2000 * diff) ~/ 180);
       animationController.forward();
@@ -229,7 +231,7 @@ class SpinnerBloc {
 
   int getElementIndex(Offset offset) {
     double tappedDegree = pointToDegree(offset);
-    double adjustedTappedDegree = (tappedDegree.abs() + circleRotationAngle) % 360;
+    double adjustedTappedDegree = (tappedDegree.abs() + circleRotationAngleNotifier.value) % 360;
     return adjustedTappedDegree ~/ theta;
   }
 
@@ -255,7 +257,7 @@ class SpinnerBloc {
         double y = _translatedY(scrollInfo.dragDetails!.localPosition);
         rotationMultiplier = (x > 0) ? -1 : 1;
       }
-      circleRotationAngle += rotationMultiplier * deltaDegree;
+      circleRotationAngleNotifier.value += rotationMultiplier * deltaDegree;
       notifyVisibilityOfElements();
       onFrameUpdate();
       if (_previousOffset! <= spinnerWidth) {
@@ -281,9 +283,4 @@ class SpinnerBloc {
   double _distanceToDegrees(double translation) => translation * 360 * SpinnerBloc.repeatContent * 2 / contentHeight;
 
   double _degreesToDistance(double degrees) => degrees * contentHeight / (360 * SpinnerBloc.repeatContent * 2);
-
-  double _convertDegreeToNegativeDegree(double degree) {
-    double adjustedDegree = degree % 360;
-    return adjustedDegree - 360;
-  }
 }

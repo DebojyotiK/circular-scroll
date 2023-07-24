@@ -96,7 +96,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
               SizedBox(
                 width: _bloc.spinnerWidth,
                 child: Text(
-                  "Rotation Angle: ${_bloc.circleRotationAngle}\n"
+                  "Rotation Angle: ${_bloc.circleRotationAngleNotifier}\n"
                   "offset: ${(_bloc.controller.hasClients) ? _bloc.controller.offset : ""}",
                   style: const TextStyle(
                     inherit: false,
@@ -156,16 +156,9 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
       left: 0,
       right: 0,
       child: Transform.rotate(
-        angle: MathUtils.radians(_bloc.circleRotationAngle),
+        angle: MathUtils.radians(_bloc.circleRotationAngleNotifier.value),
         child: SpinnerView(
-          sectorTheta: _bloc.theta,
-          innerRadius: _bloc.innerRadius,
-          outerRadius: _bloc.radius,
-          anchorRadius: _bloc.anchorRadius,
-          spinnerWidth: _bloc.spinnerWidth,
-          sectorHeight: _bloc.segmentHeight,
-          sectorWidth: _bloc.segmentWidth,
-          elementDescriptions: _bloc.elementDescriptions,
+          bloc: _bloc,
           elementBuilder: widget.elementBuilder,
         ),
       ),

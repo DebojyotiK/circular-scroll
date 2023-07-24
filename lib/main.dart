@@ -51,20 +51,6 @@ class HomePage extends StatelessWidget {
       outerRadius = width * 0.8 / 2;
       isInitialized = true;
     }
-    // return Container(
-    //   alignment: Alignment.center,
-    //   color: Colors.white,
-    //   child: Transform.rotate(
-    //     angle: MathUtils.radians(90),
-    //     child: ArcView(
-    //       segmentWidth: segmentWidth,
-    //       segmentHeight: segmentHeight,
-    //       innerRadius: innerRadius,
-    //       outerRadius: outerRadius,
-    //       theta: theta,
-    //     ),
-    //   ),
-    // );
     return _spinner(outerRadius);
   }
 
