@@ -147,7 +147,6 @@ class SpinnerBloc {
           circleRotationAngleNotifier.value = _newCircleRotationAngle;
           double adjustedRotationAngle = -90 - centerItem.anchorAngle;
           double contentOffset = _degreesToDistance(adjustedRotationAngle) + spinnerWidth;
-          debugPrint("Jump to $contentOffset");
           _previousOffset = contentOffset;
           if (_previousOffset! <= spinnerWidth) {
             _jumpToMiddle();
