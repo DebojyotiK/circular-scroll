@@ -46,12 +46,11 @@ class HomePage extends StatelessWidget {
     double radius = width * 0.8 / 2;
     return Container(
       color: Colors.white,
-      alignment: Alignment.topLeft,
-      padding: EdgeInsets.only(top: 64),
+      alignment: Alignment.center,
       child: Spinner(
         radius: radius,
-        elementsPerHalf: 3,
-        showDebugViews: true,
+        elementsPerHalf: 7,
+        showDebugViews: false,
       ),
     );
   }

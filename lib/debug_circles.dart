@@ -16,14 +16,18 @@ class DebugCircles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        _anchorCircle(),
-        _outerCircle(),
-        _innerCircle(),
-        _xAxis(),
-        _yAxis(),
-      ],
+    return Container(
+      height: spinnerWidth,
+      width: spinnerWidth,
+      child: Stack(
+        children: [
+          _anchorCircle(),
+          _outerCircle(),
+          _innerCircle(),
+          _xAxis(),
+          _yAxis(),
+        ],
+      ),
     );
   }
 

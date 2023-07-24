@@ -63,64 +63,58 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
+        SizedBox(
           width: _bloc.spinnerWidth,
-          height: _bloc.spinnerWidth,
+          height: _bloc.spinnerWidth / 2,
           child: Stack(
             children: [
               if (widget.showDebugViews)
-                DebugCircles(
-                  anchorRadius: _bloc.anchorRadius,
-                  spinnerWidth: _bloc.spinnerWidth,
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: DebugCircles(
+                    anchorRadius: _bloc.anchorRadius,
+                    spinnerWidth: _bloc.spinnerWidth,
+                  ),
                 ),
               _spinnerView(),
               _scrollContainer(),
             ],
           ),
         ),
-        SizedBox(
-          width: _bloc.spinnerWidth,
-          child: Text(
-            "Rotation Angle: ${_bloc.circleRotationAngle}\n"
-            "offset: ${(_bloc.controller.hasClients) ? _bloc.controller.offset : ""}",
-            style: const TextStyle(
-              inherit: false,
-              color: Colors.black,
-              fontSize: 16,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-        GestureDetector(
-          onTap: () {
-            debugPrint("Center Item: ${_bloc.centerItem.description}");
-          },
-          child: SizedBox(
-            width: _bloc.spinnerWidth,
-            child: const Text(
-              "Scroll to nearest",
-              style: TextStyle(
-                inherit: false,
-                color: Colors.black,
-                fontSize: 16,
+        if (widget.showDebugViews)
+          Column(
+            children: [
+              SizedBox(
+                width: _bloc.spinnerWidth,
+                child: Text(
+                  "Rotation Angle: ${_bloc.circleRotationAngle}\n"
+                  "offset: ${(_bloc.controller.hasClients) ? _bloc.controller.offset : ""}",
+                  style: const TextStyle(
+                    inherit: false,
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
+              SizedBox(
+                width: _bloc.spinnerWidth,
+                child: Text(
+                  _bloc.visibleElementText,
+                  style: const TextStyle(
+                    inherit: false,
+                    color: Colors.black,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              )
+            ],
           ),
-        ),
-        SizedBox(
-          width: _bloc.spinnerWidth,
-          child: Text(
-            _bloc.visibleElementText,
-            style: const TextStyle(
-              inherit: false,
-              color: Colors.black,
-              fontSize: 12,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
       ],
     );
   }
