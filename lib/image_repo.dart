@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:async/async.dart';
+import 'package:flutter/cupertino.dart';
 
 typedef OnImageFetchSuccess = void Function(List<String> images);
 typedef OnImageFetchFailure = void Function();
@@ -23,7 +24,9 @@ class ImageRepo {
           onImageFetchSuccess(images);
         }
       }(),
-      onCancel: () => {},
+      onCancel: () {
+        debugPrint("Cancelled");
+      },
     );
   }
 

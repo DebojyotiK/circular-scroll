@@ -7,11 +7,11 @@ import 'package:spinner/spinner.dart';
 import 'image_fetching_state.dart';
 
 class ImageFetcher {
-  int _pendingImagesCount = 0;
   final ImageRepo _repo = ImageRepo();
   final List<ValueNotifier<ImageFetchingState>> _imageStates = [];
   final int _numberOfItems;
   final SpinnerController spinnerController;
+  final List<int> _indexesToBeLoaded = [];
 
   List<ValueNotifier<ImageFetchingState>> get imageStates => List.from(_imageStates);
 
@@ -25,32 +25,30 @@ class ImageFetcher {
   }
 
   void fetchImage(int index) {
-    _pendingImagesCount++;
+    _indexesToBeLoaded.add(index);
     _imageStates[index].value = ImageFetchingProgressState();
     _repo.fetchImages(
-      _pendingImagesCount,
+      _indexesToBeLoaded.length,
       onImageFetchSuccess: (List<String> images) {
-        _pendingImagesCount = 0;
         _processFetchedImages(images);
       },
     );
   }
 
   void cancelFetchingImage(int index) {
-    if (_pendingImagesCount > 0) {
-      _pendingImagesCount--;
-      _repo.cancelFetchingImages();
+    if (_indexesToBeLoaded.contains(index)) {
+      _indexesToBeLoaded.remove(index);
     }
   }
 
   void _processFetchedImages(List<String> images) {
-    List<int> visibleElementIndexes = spinnerController.visibleElementIndexes;
-    int minLength = min(images.length, visibleElementIndexes.length);
+    int minLength = min(images.length, _indexesToBeLoaded.length);
     for (int i = 0; i < minLength; i++) {
-      int currentVisibleIndex = visibleElementIndexes[i];
+      int currentIndexToBeLoaded = _indexesToBeLoaded[i];
       String image = images[i];
-      var currentNotifier = _imageStates[currentVisibleIndex];
+      var currentNotifier = _imageStates[currentIndexToBeLoaded];
       currentNotifier.value = ImageFetchingSuccessState(image);
     }
+    _indexesToBeLoaded.clear();
   }
 }
