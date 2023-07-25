@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:spinner/spinner.dart';
 
+import 'image_fetcher.dart';
+import 'image_fetching_state.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -45,7 +48,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  double theta = 360 / 14;
+  int elementsPerHalf = 7;
+  late double _theta;
 
   late double outerRadius;
 
@@ -53,12 +57,18 @@ class _HomePageState extends State<HomePage> {
 
   late SpinnerController _spinnerController;
   late TextEditingController _textEditingController;
+  late ImageFetcher _imageFetcher;
 
   @override
   void initState() {
     super.initState();
+    _theta = 180 / elementsPerHalf;
     _spinnerController = SpinnerController();
     _textEditingController = TextEditingController();
+    _imageFetcher = ImageFetcher(
+      numberOfItemsPerHalf: elementsPerHalf,
+      spinnerController: _spinnerController,
+    );
   }
 
   @override
@@ -81,13 +91,16 @@ class _HomePageState extends State<HomePage> {
           Spinner(
             radius: radius,
             innerRadius: 0.5 * radius,
-            elementsPerHalf: 7,
+            elementsPerHalf: elementsPerHalf,
             showDebugViews: false,
             elementBuilder: (index) {
               return _view(index);
             },
-            onEnteredViewPort: (index) {
-              debugPrint("$index entered view port");
+            onEnteredViewPort: (indexes) {
+              debugPrint("$indexes entered view port");
+              for (var index in indexes) {
+                _imageFetcher.fetchImage(index);
+              }
             },
             onLeftViewPort: (index) {
               debugPrint("$index left view port");
@@ -101,7 +114,7 @@ class _HomePageState extends State<HomePage> {
             spinnerController: _spinnerController,
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Container(
               decoration: BoxDecoration(border: Border.all()),
               child: TextField(
@@ -164,56 +177,66 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _view(int index) {
-    return Container(
-        color: Colors.blue,
-        child: Stack(
-          children: [
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Image.asset(
-                "assets/$index.jpeg",
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned(
-              child: Container(
-                alignment: Alignment.center,
-                child: Container(
-                  child: Text(
-                    "$index",
-                    style: TextStyle(
-                      fontSize: 24,
-                      inherit: false,
-                      fontWeight: FontWeight.bold,
-                      foreground: Paint()
-                        ..style = PaintingStyle.stroke
-                        ..strokeWidth = 4
-                        ..color = Colors.black,
+    return ValueListenableBuilder<ImageFetchingState>(
+      valueListenable: _imageFetcher.imageStates[index],
+      builder: (context, state, child) {
+        if (state is ImageFetchingSuccessState) {
+          return Container(
+              color: Colors.blue,
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: Image.asset(
+                      state.imageUrl,
+                      fit: BoxFit.cover,
                     ),
                   ),
-                ),
-              ),
-            ),
-            Positioned(
-              child: Container(
-                alignment: Alignment.center,
-                child: Container(
-                  child: Text(
-                    "$index",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      inherit: false,
-                      fontWeight: FontWeight.bold,
+                  Positioned(
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: Container(
+                        child: Text(
+                          "$index",
+                          style: TextStyle(
+                            fontSize: 24,
+                            inherit: false,
+                            fontWeight: FontWeight.bold,
+                            foreground: Paint()
+                              ..style = PaintingStyle.stroke
+                              ..strokeWidth = 4
+                              ..color = Colors.black,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            )
-          ],
-        ));
+                  Positioned(
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: Container(
+                        child: Text(
+                          "$index",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            inherit: false,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ));
+        }
+        return Container(
+          color: const Color(0xffe5e5e5),
+        );
+      },
+    );
   }
 }

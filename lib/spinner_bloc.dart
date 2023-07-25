@@ -27,7 +27,7 @@ class SpinnerBloc {
   bool _isAnimating = false;
   bool _isScrolling = false;
 
-  List<ElementDescription> get visibleElements => _getVisibleElements();
+  List<int> get visibleElementIndexes => _getVisibleElements().map((e) => elementDescriptions.indexOf(e)).toList();
 
   bool get isAnimating => _isAnimating;
   late Animation<double> _rotationAnimation;
@@ -181,7 +181,7 @@ class SpinnerBloc {
     _rotateToAngle(newCircleNearestRotationAngle);
   }
 
-  void bringElementAtIndexToCenter(int index){
+  void bringElementAtIndexToCenter(int index) {
     double tappedDegree = (elementDescriptions[index].anchorAngle + circleRotationAngleNotifier.value) % 360;
     double adjustedDegree = _getAdjustedDegree(tappedDegree);
     double endAngle = circleRotationAngleNotifier.value + adjustedDegree;
