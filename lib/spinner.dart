@@ -14,14 +14,18 @@ class Spinner extends StatefulWidget {
   final bool showDebugViews;
   final OnEnteredViewPort? onEnteredViewPort;
   final OnLeftViewPort? onLeftViewPort;
+  final OnElementTapped? onElementTapped;
+  final OnElementCameToCenter? onElementCameToCenter;
   final CircularElementBuilder elementBuilder;
 
-  Spinner({
+  const Spinner({
     Key? key,
     required this.radius,
     required this.innerRadius,
     required this.elementsPerHalf,
     required this.elementBuilder,
+    this.onElementTapped,
+    this.onElementCameToCenter,
     this.onEnteredViewPort,
     this.onLeftViewPort,
     this.showDebugViews = true,
@@ -32,16 +36,15 @@ class Spinner extends StatefulWidget {
 }
 
 class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
-  late AnimationController controller;
-  GlobalKey<_SpinnerState> scrollKey = GlobalKey<_SpinnerState>();
+  final GlobalKey<_SpinnerState> _scrollKey = GlobalKey<_SpinnerState>();
   late SpinnerBloc _bloc;
 
-  // Method to find the coordinates and
-  // setstate method that will set the value to
-  // variable posx and posy.
   void onTapUp(BuildContext context, TapUpDetails details) {
     if (!_bloc.isScrolling && !_bloc.isAnimating) {
-      _bloc.bringTappedElementToCenter(details.localPosition);
+      int elementIndex = _bloc.bringTappedElementToCenter(details.localPosition);
+      if (widget.onElementTapped != null) {
+        widget.onElementTapped!(elementIndex);
+      }
     }
   }
 
@@ -60,6 +63,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
       },
       onEnteredViewPort: widget.onEnteredViewPort,
       onLeftViewPort: widget.onLeftViewPort,
+      onElementCameToCenter: widget.onElementCameToCenter,
     );
   }
 
@@ -94,7 +98,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
               SizedBox(
                 width: _bloc.spinnerWidth,
                 child: Text(
-                  "Rotation Angle: ${_bloc.circleRotationAngleNotifier}\n"
+                  "Rotation Angle: ${_bloc.circleRotationAngleNotifier.value}\n"
                   "offset: ${(_bloc.controller.hasClients) ? _bloc.controller.offset : ""}",
                   style: const TextStyle(
                     inherit: false,
@@ -130,7 +134,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
       child: NotificationListener<ScrollNotification>(
         child: CircularScrollView(
           bloc: _bloc,
-          key: scrollKey,
+          key: _scrollKey,
           onTapUp: (details) => onTapUp(context, details),
           showDebugViews: widget.showDebugViews,
         ),

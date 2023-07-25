@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:spinner/element_description.dart';
 
 import 'math_utils.dart';
-
-typedef OnEnteredViewPort = void Function(List<int> index);
-typedef OnLeftViewPort = void Function(List<int> index);
+import 'typedefs.dart';
 
 class SpinnerBloc {
   final double spinnerWidth;
@@ -49,13 +47,14 @@ class SpinnerBloc {
 
   OnEnteredViewPort? onEnteredViewPort;
   OnLeftViewPort? onLeftViewPort;
+  OnElementCameToCenter? onElementCameToCenter;
 
   ElementDescription get centerItem {
     int index = MathUtils.convertDegreeToNegativeDegree((-90 - circleRotationAngleNotifier.value)).abs() ~/ theta;
     return elementDescriptions[index];
   }
 
-  void notifyVisibilityOfElements() {
+  void _notifyVisibilityOfElements() {
     if (_visibleElementsCalculationLastAngle == null ||
         (circleRotationAngleNotifier.value - _visibleElementsCalculationLastAngle!).abs() > 0.2 * theta) {
       _visibleElementsCalculationLastAngle = circleRotationAngleNotifier.value;
@@ -102,6 +101,7 @@ class SpinnerBloc {
     required this.onFrameUpdate,
     this.onEnteredViewPort,
     this.onLeftViewPort,
+    this.onElementCameToCenter,
   })  : spinnerWidth = 2 * radius,
         numberOfItems = 2 * elementsPerHalf,
         anchorRadius = innerRadius + (radius - innerRadius) / 2,
@@ -113,10 +113,10 @@ class SpinnerBloc {
     _segmentWidth = 2 * radius * sinThetaBy2;
     _initialize();
     _initializeAnimation();
-    initializeScrollController();
+    _initializeScrollController();
   }
 
-  void initializeScrollController() {
+  void _initializeScrollController() {
     controller = ScrollController(initialScrollOffset: spinnerWidth + contentHeight / 2);
   }
 
@@ -125,11 +125,17 @@ class SpinnerBloc {
       var element = ElementDescription(
         -1 * (theta / 2 + i * theta),
         theta,
-        "$i",
       );
       elementDescriptions.add(element);
     }
-    notifyVisibilityOfElements();
+    _notifyCenteredElement();
+    _notifyVisibilityOfElements();
+  }
+
+  void _notifyCenteredElement() {
+    if (onElementCameToCenter != null) {
+      onElementCameToCenter!(elementDescriptions.indexOf(centerItem));
+    }
   }
 
   void _initializeAnimation() {
@@ -155,7 +161,8 @@ class SpinnerBloc {
           } else {
             controller.jumpTo(_previousOffset!);
           }
-          notifyVisibilityOfElements();
+          _notifyCenteredElement();
+          _notifyVisibilityOfElements();
           _isAnimating = false;
         }
         onFrameUpdate();
@@ -172,11 +179,13 @@ class SpinnerBloc {
     _rotateToAngle(newCircleNearestRotationAngle);
   }
 
-  void bringTappedElementToCenter(Offset offset) {
-    double tappedDegree = (elementDescriptions[getElementIndex(offset)].anchorAngle + circleRotationAngleNotifier.value) % 360;
+  int bringTappedElementToCenter(Offset offset) {
+    int elementIndex = getElementIndex(offset);
+    double tappedDegree = (elementDescriptions[elementIndex].anchorAngle + circleRotationAngleNotifier.value) % 360;
     double adjustedDegree = _getAdjustedDegree(tappedDegree);
     double endAngle = circleRotationAngleNotifier.value + adjustedDegree;
     _rotateToAngle(endAngle);
+    return elementIndex;
   }
 
   double _getAdjustedDegree(double tappedDegree) {
@@ -192,7 +201,7 @@ class SpinnerBloc {
   }
 
   void _rotateToAngle(double newCircleRotationAngle) {
-    if (newCircleRotationAngle != circleRotationAngleNotifier) {
+    if (newCircleRotationAngle != circleRotationAngleNotifier.value) {
       _isAnimating = true;
       _newCircleRotationAngle = newCircleRotationAngle;
       double diff = (_newCircleRotationAngle - circleRotationAngleNotifier.value).abs();
@@ -257,7 +266,7 @@ class SpinnerBloc {
         rotationMultiplier = (x > 0) ? -1 : 1;
       }
       circleRotationAngleNotifier.value += rotationMultiplier * deltaDegree;
-      notifyVisibilityOfElements();
+      _notifyVisibilityOfElements();
       onFrameUpdate();
       if (_previousOffset! <= spinnerWidth) {
         _jumpToMiddle();

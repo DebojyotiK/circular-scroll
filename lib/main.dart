@@ -72,6 +72,12 @@ class HomePage extends StatelessWidget {
         onLeftViewPort: (index) {
           debugPrint("$index left view port");
         },
+        onElementTapped: (index) {
+          debugPrint("$index was tapped");
+        },
+        onElementCameToCenter: (index) {
+          debugPrint("$index came to center");
+        },
       ),
     );
   }
