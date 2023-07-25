@@ -32,17 +32,34 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: HomePage(),
+      home: Scaffold(body: HomePage()),
     );
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   double theta = 360 / 14;
+
   late double outerRadius;
+
   bool isInitialized = false;
+
+  late SpinnerController _spinnerController;
+  late TextEditingController _textEditingController;
+
+  @override
+  void initState() {
+    super.initState();
+    _spinnerController = SpinnerController();
+    _textEditingController = TextEditingController();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,28 +75,92 @@ class HomePage extends StatelessWidget {
     return Container(
       color: Colors.white,
       alignment: Alignment.center,
-      child: Spinner(
-        radius: radius,
-        innerRadius: 0.5 * radius,
-        elementsPerHalf: 7,
-        showDebugViews: false,
-        elementBuilder: (index) {
-          return _view(index);
-        },
-        onEnteredViewPort: (index) {
-          debugPrint("$index entered view port");
-        },
-        onLeftViewPort: (index) {
-          debugPrint("$index left view port");
-        },
-        onElementTapped: (index) {
-          debugPrint("$index was tapped");
-        },
-        onElementCameToCenter: (index) {
-          debugPrint("$index came to center");
-        },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Spinner(
+            radius: radius,
+            innerRadius: 0.5 * radius,
+            elementsPerHalf: 7,
+            showDebugViews: false,
+            elementBuilder: (index) {
+              return _view(index);
+            },
+            onEnteredViewPort: (index) {
+              debugPrint("$index entered view port");
+            },
+            onLeftViewPort: (index) {
+              debugPrint("$index left view port");
+            },
+            onElementTapped: (index) {
+              debugPrint("$index was tapped");
+            },
+            onElementCameToCenter: (index) {
+              debugPrint("$index came to center");
+            },
+            spinnerController: _spinnerController,
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            child: Container(
+              decoration: BoxDecoration(border: Border.all()),
+              child: TextField(
+                controller: _textEditingController,
+              ),
+            ),
+          ),
+          TextButton(
+              onPressed: () {
+                int indexToScroll = int.parse(_textEditingController.text);
+                _spinnerController.bringElementAtIndexToCenter(indexToScroll);
+              },
+              child: const Text(
+                "Rotate to index",
+                style: TextStyle(
+                  inherit: false,
+                  color: Colors.black,
+                  fontSize: 16,
+                ),
+              )),
+          TextButton(
+              onPressed: _rotateVigorously,
+              child: const Text(
+                "Rotate Vigorously",
+                style: TextStyle(
+                  inherit: false,
+                  color: Colors.black,
+                  fontSize: 16,
+                ),
+              ))
+        ],
       ),
     );
+  }
+
+  void _rotateVigorously() async {
+    _spinnerController.bringElementAtIndexToCenter(0);
+    await _pauseInteraction();
+    _spinnerController.bringElementAtIndexToCenter(1);
+    await _pauseInteraction();
+    _spinnerController.bringElementAtIndexToCenter(3);
+    await _pauseInteraction();
+    _spinnerController.bringElementAtIndexToCenter(5);
+    await _pauseInteraction();
+    _spinnerController.bringElementAtIndexToCenter(6);
+    await _pauseInteraction();
+    _spinnerController.bringElementAtIndexToCenter(7);
+    await _pauseInteraction();
+    _spinnerController.bringElementAtIndexToCenter(8);
+    await _pauseInteraction();
+    _spinnerController.bringElementAtIndexToCenter(3);
+    await _pauseInteraction();
+    _spinnerController.bringElementAtIndexToCenter(13);
+    await _pauseInteraction();
+    _spinnerController.bringElementAtIndexToCenter(2);
+  }
+
+  Future<void> _pauseInteraction() async {
+    await Future.delayed(const Duration(seconds: 1), () {});
   }
 
   Widget _view(int index) {
@@ -100,13 +181,34 @@ class HomePage extends StatelessWidget {
             Positioned(
               child: Container(
                 alignment: Alignment.center,
-                child: Text(
-                  "$index",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    inherit: false,
-                    fontWeight: FontWeight.bold,
+                child: Container(
+                  child: Text(
+                    "$index",
+                    style: TextStyle(
+                      fontSize: 24,
+                      inherit: false,
+                      fontWeight: FontWeight.bold,
+                      foreground: Paint()
+                        ..style = PaintingStyle.stroke
+                        ..strokeWidth = 4
+                        ..color = Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              child: Container(
+                alignment: Alignment.center,
+                child: Container(
+                  child: Text(
+                    "$index",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      inherit: false,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

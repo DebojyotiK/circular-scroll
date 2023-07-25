@@ -181,12 +181,16 @@ class SpinnerBloc {
     _rotateToAngle(newCircleNearestRotationAngle);
   }
 
-  int bringTappedElementToCenter(Offset offset) {
-    int elementIndex = getElementIndex(offset);
-    double tappedDegree = (elementDescriptions[elementIndex].anchorAngle + circleRotationAngleNotifier.value) % 360;
+  void bringElementAtIndexToCenter(int index){
+    double tappedDegree = (elementDescriptions[index].anchorAngle + circleRotationAngleNotifier.value) % 360;
     double adjustedDegree = _getAdjustedDegree(tappedDegree);
     double endAngle = circleRotationAngleNotifier.value + adjustedDegree;
     _rotateToAngle(endAngle);
+  }
+
+  int bringTappedElementToCenter(Offset offset) {
+    int elementIndex = getElementIndex(offset);
+    bringElementAtIndexToCenter(elementIndex);
     return elementIndex;
   }
 

@@ -7,6 +7,8 @@ import 'debug_circles.dart';
 import 'math_utils.dart';
 import 'typedefs.dart';
 
+part 'spinner_controller.dart';
+
 class Spinner extends StatefulWidget {
   final int elementsPerHalf;
   final double radius;
@@ -17,6 +19,7 @@ class Spinner extends StatefulWidget {
   final OnElementTapped? onElementTapped;
   final OnElementCameToCenter? onElementCameToCenter;
   final CircularElementBuilder elementBuilder;
+  final SpinnerController? spinnerController;
 
   const Spinner({
     Key? key,
@@ -24,6 +27,7 @@ class Spinner extends StatefulWidget {
     required this.innerRadius,
     required this.elementsPerHalf,
     required this.elementBuilder,
+    this.spinnerController,
     this.onElementTapped,
     this.onElementCameToCenter,
     this.onEnteredViewPort,
@@ -65,6 +69,7 @@ class _SpinnerState extends State<Spinner> with SingleTickerProviderStateMixin {
       onLeftViewPort: widget.onLeftViewPort,
       onElementCameToCenter: widget.onElementCameToCenter,
     );
+    widget.spinnerController?._bloc = _bloc;
   }
 
   @override
