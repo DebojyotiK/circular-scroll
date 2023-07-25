@@ -1,13 +1,14 @@
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:spinner/image_repo.dart';
+import 'package:spinner/local_image_fetch_impl.dart';
 import 'package:spinner/spinner.dart';
 
 import 'image_fetching_state.dart';
+import 'image_repo.dart';
 
 class ImageFetcher {
-  final ImageRepo _repo = ImageRepo();
+  final ImageRepo _repo = LocalImageFetchImpl();
   final List<ValueNotifier<ImageFetchingState>> _imageStates = [];
   final int _numberOfItems;
   final SpinnerController spinnerController;
