@@ -4,30 +4,17 @@ import 'dart:math';
 import 'package:async/async.dart';
 import 'package:flutter/cupertino.dart';
 
-typedef OnImageFetchSuccess = void Function(List<String> images);
-typedef OnImageFetchFailure = void Function();
-
 class ImageRepo {
-  CancelableOperation? operation;
+  CancelableOperation<List<String>>? operation;
   final Random _random = Random();
 
-  void fetchImages(
-    int count, {
-    OnImageFetchSuccess? onImageFetchSuccess,
-    OnImageFetchFailure? onImageFetchFailure,
-  }) {
+  Future<List<String>> fetchImages(int count) {
     operation?.cancel();
     operation = CancelableOperation.fromFuture(
-      () async {
-        List<String> images = await _fetchImages(count);
-        if (onImageFetchSuccess != null) {
-          onImageFetchSuccess(images);
-        }
-      }(),
-      onCancel: () {
-        debugPrint("Cancelled");
-      },
+      _fetchImages(count),
+      onCancel: () {},
     );
+    return operation!.value;
   }
 
   void cancelFetchingImages() {
@@ -36,11 +23,12 @@ class ImageRepo {
   }
 
   Future<List<String>> _fetchImages(int count) async {
-    await Future.delayed(Duration(milliseconds: _random.nextInt(1200) + 800), () {});
+    await Future.delayed(Duration(milliseconds: _random.nextInt(300) + 200), () {});
     List<String> imagePaths = [];
     for (int i = 0; i < count; i++) {
       imagePaths.add("assets/${_random.nextInt(13)}.jpeg");
     }
     return imagePaths;
   }
+
 }

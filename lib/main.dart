@@ -97,22 +97,22 @@ class _HomePageState extends State<HomePage> {
               return _view(index);
             },
             onEnteredViewPort: (indexes) {
-              debugPrint("$indexes entered view port");
+              //debugPrint("$indexes entered view port");
               for (var index in indexes) {
                 _imageFetcher.fetchImage(index);
               }
             },
             onLeftViewPort: (indexes) {
-              debugPrint("$indexes left view port");
+              //debugPrint("$indexes left view port");
               for (var index in indexes) {
                 _imageFetcher.cancelFetchingImage(index);
               }
             },
             onElementTapped: (index) {
-              debugPrint("$index was tapped");
+              // debugPrint("$index was tapped");
             },
             onElementCameToCenter: (index) {
-              debugPrint("$index came to center");
+              // debugPrint("$index came to center");
             },
             spinnerController: _spinnerController,
           ),
@@ -180,66 +180,61 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _view(int index) {
-    return ValueListenableBuilder<ImageFetchingState>(
-      valueListenable: _imageFetcher.imageStates[index],
-      builder: (context, state, child) {
-        if (state is ImageFetchingSuccessState) {
-          return Container(
-              color: Colors.blue,
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: Image.asset(
-                      state.imageUrl,
-                      fit: BoxFit.cover,
-                    ),
+    return Container(
+      color: const Color(0xffe5e5e5),
+      child: ValueListenableBuilder<ImageFetchingState>(
+        valueListenable: _imageFetcher.imageStates[index],
+        builder: (context, state, child) {
+          if (state is ImageFetchingSuccessState) {
+            return Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Image.asset(
+                    state.imageUrl,
+                    fit: BoxFit.cover,
                   ),
-                  Positioned(
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: Container(
-                        child: Text(
-                          "$index",
-                          style: TextStyle(
-                            fontSize: 24,
-                            inherit: false,
-                            fontWeight: FontWeight.bold,
-                            foreground: Paint()
-                              ..style = PaintingStyle.stroke
-                              ..strokeWidth = 4
-                              ..color = Colors.black,
-                          ),
-                        ),
+                ),
+                Positioned(
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: Text(
+                      "$index",
+                      style: TextStyle(
+                        fontSize: 24,
+                        inherit: false,
+                        fontWeight: FontWeight.bold,
+                        foreground: Paint()
+                          ..style = PaintingStyle.stroke
+                          ..strokeWidth = 4
+                          ..color = Colors.black,
                       ),
                     ),
                   ),
-                  Positioned(
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: Container(
-                        child: Text(
-                          "$index",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            inherit: false,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                ),
+                Positioned(
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: Text(
+                      "$index",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        inherit: false,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  )
-                ],
-              ));
-        }
-        return Container(
-          color: const Color(0xffe5e5e5),
-        );
-      },
+                  ),
+                )
+              ],
+            );
+          }
+          return Container();
+        },
+      ),
     );
   }
 }
