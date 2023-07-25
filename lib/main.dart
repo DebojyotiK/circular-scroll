@@ -102,8 +102,11 @@ class _HomePageState extends State<HomePage> {
                 _imageFetcher.fetchImage(index);
               }
             },
-            onLeftViewPort: (index) {
-              debugPrint("$index left view port");
+            onLeftViewPort: (indexes) {
+              debugPrint("$indexes left view port");
+              for (var index in indexes) {
+                _imageFetcher.cancelFetchingImage(index);
+              }
             },
             onElementTapped: (index) {
               debugPrint("$index was tapped");

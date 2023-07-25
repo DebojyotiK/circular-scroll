@@ -36,6 +36,13 @@ class ImageFetcher {
     );
   }
 
+  void cancelFetchingImage(int index) {
+    if (_pendingImagesCount > 0) {
+      _pendingImagesCount--;
+      _repo.cancelFetchingImages();
+    }
+  }
+
   void _processFetchedImages(List<String> images) {
     List<int> visibleElementIndexes = spinnerController.visibleElementIndexes;
     int minLength = min(images.length, visibleElementIndexes.length);
