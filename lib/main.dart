@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:spinner/image_view.dart';
-import 'package:spinner/spinner.dart';
 
 import 'image_fetcher.dart';
+import 'spinner/spinner.dart';
 
 void main() {
   runApp(const MyApp());

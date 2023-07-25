@@ -4,11 +4,13 @@ import 'image_fetching_state.dart';
 
 class ImageView extends StatefulWidget {
   final int index;
+  final bool showIndex;
   final ValueNotifier<ImageFetchingState> state;
 
   const ImageView({
     Key? key,
     required this.index,
+    this.showIndex = false,
     required this.state,
   }) : super(key: key);
 
@@ -59,37 +61,39 @@ class _ImageViewState extends State<ImageView> {
             fit: BoxFit.cover,
           ),
         ),
-        Positioned(
-          child: Container(
-            alignment: Alignment.center,
-            child: Text(
-              "${widget.index}",
-              style: TextStyle(
-                fontSize: 24,
-                inherit: false,
-                fontWeight: FontWeight.bold,
-                foreground: Paint()
-                  ..style = PaintingStyle.stroke
-                  ..strokeWidth = 4
-                  ..color = Colors.black,
+        if (widget.showIndex)
+          Positioned(
+            child: Container(
+              alignment: Alignment.center,
+              child: Text(
+                "${widget.index}",
+                style: TextStyle(
+                  fontSize: 24,
+                  inherit: false,
+                  fontWeight: FontWeight.bold,
+                  foreground: Paint()
+                    ..style = PaintingStyle.stroke
+                    ..strokeWidth = 4
+                    ..color = Colors.black,
+                ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          child: Container(
-            alignment: Alignment.center,
-            child: Text(
-              "${widget.index}",
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                inherit: false,
-                fontWeight: FontWeight.bold,
+        if (widget.showIndex)
+          Positioned(
+            child: Container(
+              alignment: Alignment.center,
+              child: Text(
+                "${widget.index}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  inherit: false,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-        )
+          )
       ],
     );
   }

@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:spinner/element_description.dart';
+import 'package:spinner/spinner/element_description.dart';
 
 import 'math_utils.dart';
 import 'typedefs.dart';

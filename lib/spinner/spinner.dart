@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:spinner/circular_scroll_view.dart';
-import 'package:spinner/spinner_bloc.dart';
-import 'package:spinner/spinner_view.dart';
+import 'package:spinner/spinner/circular_scroll_view.dart';
+import 'spinner_bloc.dart';
+import 'package:spinner/spinner/spinner_view.dart';
 
 import 'debug_circles.dart';
 import 'math_utils.dart';

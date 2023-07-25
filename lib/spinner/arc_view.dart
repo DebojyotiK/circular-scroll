@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spinner/arc_clipper.dart';
+import 'package:spinner/spinner/arc_clipper.dart';
 
 import 'typedefs.dart';
 

@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:spinner/local_image_fetch_impl.dart';
-import 'package:spinner/spinner.dart';
+import 'package:spinner/spinner/spinner.dart';
 
 import 'image_fetching_state.dart';
 import 'image_repo.dart';

@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:spinner/math_utils.dart';
+import 'package:spinner/spinner/math_utils.dart';
 
 class ArcClipper extends CustomClipper<Path> {
   final double arcTheta;

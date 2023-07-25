@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spinner/spinner_bloc.dart';
+import 'spinner_bloc.dart';
 
 class CircularScrollView extends StatelessWidget {
   final GestureTapUpCallback? onTapUp;

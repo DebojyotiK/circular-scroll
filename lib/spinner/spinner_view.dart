@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:spinner/arc_view.dart';
-import 'package:spinner/spinner_bloc.dart';
+import 'package:spinner/spinner/arc_view.dart';
+import 'spinner_bloc.dart';
 
 import 'math_utils.dart';
 import 'typedefs.dart';
