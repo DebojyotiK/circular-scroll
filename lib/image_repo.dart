@@ -2,11 +2,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:async/async.dart';
-import 'package:flutter/cupertino.dart';
 
 class ImageRepo {
   CancelableOperation<List<String>>? operation;
-  final Random _random = Random();
 
   Future<List<String>> fetchImages(int count) {
     operation?.cancel();
@@ -23,12 +21,13 @@ class ImageRepo {
   }
 
   Future<List<String>> _fetchImages(int count) async {
-    await Future.delayed(Duration(milliseconds: _random.nextInt(300) + 200), () {});
+    await Future.delayed(Duration(milliseconds: _apiFetchTime()), () {});
     List<String> imagePaths = [];
     for (int i = 0; i < count; i++) {
-      imagePaths.add("assets/${_random.nextInt(13)}.jpeg");
+      imagePaths.add("assets/${Random().nextInt(24)}.jpeg");
     }
     return imagePaths;
   }
 
+  int _apiFetchTime() => Random().nextInt(300) + 200;
 }
