@@ -12,6 +12,9 @@ class ImageFetcher {
   final int _numberOfItems;
   final SpinnerController spinnerController;
   final List<int> _indexesToBeLoaded = [];
+  final ValueNotifier<int> _totalResultsFetchedTillDateNotifier = ValueNotifier(0);
+
+  ValueNotifier<int> get totalResultsFetchedTillDateNotifier => _totalResultsFetchedTillDateNotifier;
 
   List<ValueNotifier<ImageFetchingState>> get imageStates => List.from(_imageStates);
 
@@ -50,6 +53,7 @@ class ImageFetcher {
       var currentNotifier = _imageStates[currentIndexToBeLoaded];
       currentNotifier.value = ImageFetchingSuccessState(image);
     }
+    _totalResultsFetchedTillDateNotifier.value += minLength;
     _indexesToBeLoaded.clear();
   }
 }

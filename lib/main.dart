@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:spinner/image_view.dart';
 import 'package:spinner/spinner.dart';
 
 import 'image_fetcher.dart';
-import 'image_fetching_state.dart';
 
 void main() {
   runApp(const MyApp());
@@ -58,6 +58,7 @@ class _HomePageState extends State<HomePage> {
   late SpinnerController _spinnerController;
   late TextEditingController _textEditingController;
   late ImageFetcher _imageFetcher;
+  GlobalKey<_HomePageState> _homePageKey = GlobalKey<_HomePageState>();
 
   @override
   void initState() {
@@ -94,25 +95,28 @@ class _HomePageState extends State<HomePage> {
             elementsPerHalf: elementsPerHalf,
             showDebugViews: false,
             elementBuilder: (index) {
-              return _view(index);
+              return ImageView(
+                index: index,
+                state: _imageFetcher.imageStates[index],
+              );
             },
             onEnteredViewPort: (indexes) {
-              //debugPrint("$indexes entered view port");
+              debugPrint("$indexes entered view port");
               for (var index in indexes) {
                 _imageFetcher.fetchImage(index);
               }
             },
             onLeftViewPort: (indexes) {
-              //debugPrint("$indexes left view port");
+              debugPrint("$indexes left view port");
               for (var index in indexes) {
                 _imageFetcher.cancelFetchingImage(index);
               }
             },
             onElementTapped: (index) {
-              // debugPrint("$index was tapped");
+              debugPrint("$index was tapped");
             },
             onElementCameToCenter: (index) {
-              // debugPrint("$index came to center");
+              debugPrint("$index came to center");
             },
             spinnerController: _spinnerController,
           ),
@@ -126,28 +130,43 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           TextButton(
-              onPressed: () {
-                int indexToScroll = int.parse(_textEditingController.text);
-                _spinnerController.bringElementAtIndexToCenter(indexToScroll);
-              },
-              child: const Text(
-                "Rotate to index",
-                style: TextStyle(
-                  inherit: false,
-                  color: Colors.black,
-                  fontSize: 16,
-                ),
-              )),
+            onPressed: () {
+              int indexToScroll = int.parse(_textEditingController.text);
+              _spinnerController.bringElementAtIndexToCenter(indexToScroll);
+            },
+            child: const Text(
+              "Rotate to index",
+              style: TextStyle(
+                inherit: false,
+                color: Colors.black,
+                fontSize: 16,
+              ),
+            ),
+          ),
           TextButton(
-              onPressed: _rotateVigorously,
-              child: const Text(
-                "Rotate Vigorously",
-                style: TextStyle(
+            onPressed: _rotateVigorously,
+            child: const Text(
+              "Rotate Vigorously",
+              style: TextStyle(
+                inherit: false,
+                color: Colors.black,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          ValueListenableBuilder<int>(
+            valueListenable: _imageFetcher.totalResultsFetchedTillDateNotifier,
+            builder: (context, value, child) {
+              return Text(
+                "Fetched till date: $value",
+                style: const TextStyle(
                   inherit: false,
                   color: Colors.black,
                   fontSize: 16,
                 ),
-              ))
+              );
+            },
+          ),
         ],
       ),
     );
@@ -177,64 +196,5 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _pauseInteraction() async {
     await Future.delayed(const Duration(seconds: 1), () {});
-  }
-
-  Widget _view(int index) {
-    return Container(
-      color: const Color(0xffe5e5e5),
-      child: ValueListenableBuilder<ImageFetchingState>(
-        valueListenable: _imageFetcher.imageStates[index],
-        builder: (context, state, child) {
-          if (state is ImageFetchingSuccessState) {
-            return Stack(
-              children: [
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: Image.asset(
-                    state.imageUrl,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Positioned(
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      "$index",
-                      style: TextStyle(
-                        fontSize: 24,
-                        inherit: false,
-                        fontWeight: FontWeight.bold,
-                        foreground: Paint()
-                          ..style = PaintingStyle.stroke
-                          ..strokeWidth = 4
-                          ..color = Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      "$index",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        inherit: false,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            );
-          }
-          return Container();
-        },
-      ),
-    );
   }
 }
