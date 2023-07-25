@@ -27,6 +27,8 @@ class SpinnerBloc {
   bool _isAnimating = false;
   bool _isScrolling = false;
 
+  List<ElementDescription> get visibleElements => _getVisibleElements();
+
   bool get isAnimating => _isAnimating;
   late Animation<double> _rotationAnimation;
 
