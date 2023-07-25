@@ -25,15 +25,18 @@ class ImageFetcher {
   }
 
   void fetchImage(int index) async {
-    _indexesToBeLoaded.add(index);
     _imageStates[index].value = ImageFetchingProgressState();
-    List<String> images = await _repo.fetchImages(
-      _indexesToBeLoaded.length,
-    );
-    _processFetchedImages(images);
+    if (!_indexesToBeLoaded.contains(index)) {
+      _indexesToBeLoaded.add(index);
+      List<String> images = await _repo.fetchImages(
+        _indexesToBeLoaded.length,
+      );
+      _processFetchedImages(images);
+    }
   }
 
   void cancelFetchingImage(int index) {
+    _imageStates[index].value = ImageFetchingProgressState();
     if (_indexesToBeLoaded.contains(index)) {
       _indexesToBeLoaded.remove(index);
     }
