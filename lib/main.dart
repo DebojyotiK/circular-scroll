@@ -48,8 +48,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int elementsPerHalf = 7;
-  late double _theta;
 
   late double outerRadius;
 
@@ -63,11 +61,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _theta = 180 / elementsPerHalf;
-    _spinnerController = SpinnerController();
+    _spinnerController = SpinnerController(7);
     _textEditingController = TextEditingController();
     _imageFetcher = ImageFetcher(
-      numberOfItemsPerHalf: elementsPerHalf,
+      numberOfItemsPerHalf: _spinnerController.elementsPerHalf,
       spinnerController: _spinnerController,
     );
   }
@@ -92,12 +89,13 @@ class _HomePageState extends State<HomePage> {
           Spinner(
             radius: radius,
             innerRadius: 0.5 * radius,
-            elementsPerHalf: elementsPerHalf,
+            elementsPerHalf: _spinnerController.elementsPerHalf,
             showDebugViews: false,
             elementBuilder: (index) {
               return ImageView(
                 index: index,
                 state: _imageFetcher.imageStates[index],
+                showIndex: true,
               );
             },
             onEnteredViewPort: (indexes) {
@@ -147,6 +145,54 @@ class _HomePageState extends State<HomePage> {
             onPressed: _rotateVigorously,
             child: const Text(
               "Rotate Vigorously",
+              style: TextStyle(
+                inherit: false,
+                color: Colors.black,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: (){
+              _spinnerController.bringElementAtIndexToCenter(
+                _spinnerController.centerItemIndex,
+                turns: 1,
+              );
+            },
+            child: const Text(
+              "Circle Back",
+              style: TextStyle(
+                inherit: false,
+                color: Colors.black,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: (){
+              _spinnerController.bringElementAtIndexToCenter(
+                _spinnerController.itemIndexAtLeftFromCenter(1),
+                turns: 1,
+              );
+            },
+            child: const Text(
+              "Circle Back to Left",
+              style: TextStyle(
+                inherit: false,
+                color: Colors.black,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: (){
+              _spinnerController.bringElementAtIndexToCenter(
+                _spinnerController.itemIndexAtRightFromCenter(1),
+                turns: 1,
+              );
+            },
+            child: const Text(
+              "Circle Back to Right",
               style: TextStyle(
                 inherit: false,
                 color: Colors.black,

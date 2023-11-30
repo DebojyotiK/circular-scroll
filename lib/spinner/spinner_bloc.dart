@@ -52,9 +52,10 @@ class SpinnerBloc {
   OnElementCameToCenter? onElementCameToCenter;
 
   ElementDescription get centerItem {
-    int index = MathUtils.convertDegreeToNegativeDegree((-90 - circleRotationAngleNotifier.value)).abs() ~/ theta;
-    return elementDescriptions[index];
+    return elementDescriptions[centerItemIndex];
   }
+
+  int get centerItemIndex => MathUtils.convertDegreeToNegativeDegree((-90 - circleRotationAngleNotifier.value)).abs() ~/ theta;
 
   void _notifyVisibilityOfElements() {
     if (_visibleElementsCalculationLastAngle == null ||
@@ -181,16 +182,22 @@ class SpinnerBloc {
     _rotateToAngle(newCircleNearestRotationAngle);
   }
 
-  void bringElementAtIndexToCenter(int index) {
+  void bringElementAtIndexToCenter(
+    int index, {
+    required int turns,
+  }) {
     double tappedDegree = (elementDescriptions[index].anchorAngle + circleRotationAngleNotifier.value) % 360;
     double adjustedDegree = _getAdjustedDegree(tappedDegree);
-    double endAngle = circleRotationAngleNotifier.value + adjustedDegree;
+    double endAngle = circleRotationAngleNotifier.value + adjustedDegree + turns * 360;
     _rotateToAngle(endAngle);
   }
 
   int bringTappedElementToCenter(Offset offset) {
     int elementIndex = getElementIndex(offset);
-    bringElementAtIndexToCenter(elementIndex);
+    bringElementAtIndexToCenter(
+      elementIndex,
+      turns: 0,
+    );
     return elementIndex;
   }
 
