@@ -131,8 +131,8 @@ class SpinnerBloc {
       );
       elementDescriptions.add(element);
     }
-    _notifyCenteredElement(SpinnerChangeReason.initialize);
     _notifyVisibilityOfElements(SpinnerChangeReason.initialize);
+    _notifyCenteredElement(SpinnerChangeReason.initialize);
   }
 
   void _notifyCenteredElement(SpinnerChangeReason reason) {
@@ -164,15 +164,14 @@ class SpinnerBloc {
           } else {
             controller.jumpTo(_previousOffset!);
           }
-          _notifyCenteredElement(SpinnerChangeReason.scrollEnd);
           _notifyVisibilityOfElements(SpinnerChangeReason.scrollEnd);
+          _notifyCenteredElement(SpinnerChangeReason.scrollEnd);
           _isAnimating = false;
         }
         onFrameUpdate();
       })
       ..addListener(() {
-        circleRotationAngleNotifier.value =
-            circleRotationAngleNotifier.value + _rotationAnimation.value * (_newCircleRotationAngle - circleRotationAngleNotifier.value);
+        circleRotationAngleNotifier.value = circleRotationAngleNotifier.value + _rotationAnimation.value * (_newCircleRotationAngle - circleRotationAngleNotifier.value);
         onFrameUpdate();
       });
   }
