@@ -86,37 +86,40 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Spinner(
-            radius: radius,
-            innerRadius: 0.5 * radius,
-            elementsPerHalf: _spinnerController.elementsPerHalf,
-            showDebugViews: false,
-            elementBuilder: (index) {
-              return ImageView(
-                index: index,
-                state: _imageFetcher.imageStates[index],
-                showIndex: true,
-              );
-            },
-            onEnteredViewPort: (indexes) {
-              debugPrint("$indexes entered view port");
-              for (var index in indexes) {
-                _imageFetcher.fetchImage(index);
-              }
-            },
-            onLeftViewPort: (indexes) {
-              debugPrint("$indexes left view port");
-              for (var index in indexes) {
-                _imageFetcher.cancelFetchingImage(index);
-              }
-            },
-            onElementTapped: (index) {
-              debugPrint("$index was tapped");
-            },
-            onElementCameToCenter: (index) {
-              debugPrint("$index came to center");
-            },
-            spinnerController: _spinnerController,
+          Container(
+            color: Colors.red,
+            child: Spinner(
+              radius: radius,
+              innerRadius: 0.5 * radius,
+              elementsPerHalf: _spinnerController.elementsPerHalf,
+              showDebugViews: false,
+              elementBuilder: (index) {
+                return ImageView(
+                  index: index,
+                  state: _imageFetcher.imageStates[index],
+                  showIndex: true,
+                );
+              },
+              onEnteredViewPort: (indexes, reason) {
+                debugPrint("$indexes entered view port");
+                for (var index in indexes) {
+                  _imageFetcher.fetchImage(index);
+                }
+              },
+              onLeftViewPort: (indexes, reason) {
+                debugPrint("$indexes left view port");
+                for (var index in indexes) {
+                  _imageFetcher.cancelFetchingImage(index);
+                }
+              },
+              onElementTapped: (index) {
+                debugPrint("$index was tapped");
+              },
+              onElementCameToCenter: (index, reason) {
+                debugPrint("$index came to center");
+              },
+              spinnerController: _spinnerController,
+            ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),

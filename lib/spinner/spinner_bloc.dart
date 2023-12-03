@@ -57,7 +57,7 @@ class SpinnerBloc {
 
   int get centerItemIndex => MathUtils.convertDegreeToNegativeDegree((-90 - circleRotationAngleNotifier.value)).abs() ~/ theta;
 
-  void _notifyVisibilityOfElements() {
+  void _notifyVisibilityOfElements(SpinnerChangeReason reason) {
     if (_visibleElementsCalculationLastAngle == null ||
         (circleRotationAngleNotifier.value - _visibleElementsCalculationLastAngle!).abs() > 0.2 * theta) {
       _visibleElementsCalculationLastAngle = circleRotationAngleNotifier.value;
@@ -75,10 +75,10 @@ class SpinnerBloc {
         }
       }
       if (onEnteredViewPort != null && newlyVisibleElement.isNotEmpty) {
-        onEnteredViewPort!(newlyVisibleElement);
+        onEnteredViewPort!(newlyVisibleElement, reason);
       }
       if (onLeftViewPort != null && newlyHiddenElement.isNotEmpty) {
-        onLeftViewPort!(newlyHiddenElement);
+        onLeftViewPort!(newlyHiddenElement, reason);
       }
       _lastVisibleElements = visibleElements;
     }
@@ -131,13 +131,13 @@ class SpinnerBloc {
       );
       elementDescriptions.add(element);
     }
-    _notifyCenteredElement();
-    _notifyVisibilityOfElements();
+    _notifyCenteredElement(SpinnerChangeReason.initialize);
+    _notifyVisibilityOfElements(SpinnerChangeReason.initialize);
   }
 
-  void _notifyCenteredElement() {
+  void _notifyCenteredElement(SpinnerChangeReason reason) {
     if (onElementCameToCenter != null) {
-      onElementCameToCenter!(elementDescriptions.indexOf(centerItem));
+      onElementCameToCenter!(elementDescriptions.indexOf(centerItem), reason);
     }
   }
 
@@ -164,8 +164,8 @@ class SpinnerBloc {
           } else {
             controller.jumpTo(_previousOffset!);
           }
-          _notifyCenteredElement();
-          _notifyVisibilityOfElements();
+          _notifyCenteredElement(SpinnerChangeReason.scrollEnd);
+          _notifyVisibilityOfElements(SpinnerChangeReason.scrollEnd);
           _isAnimating = false;
         }
         onFrameUpdate();
@@ -279,7 +279,7 @@ class SpinnerBloc {
         rotationMultiplier = (x > 0) ? -1 : 1;
       }
       circleRotationAngleNotifier.value += rotationMultiplier * deltaDegree;
-      _notifyVisibilityOfElements();
+      _notifyVisibilityOfElements(SpinnerChangeReason.scrolling);
       onFrameUpdate();
       if (_previousOffset! <= spinnerWidth) {
         _jumpToMiddle();
